@@ -10,10 +10,12 @@ impl Day for Day2 {
   fn puzzle_1(&self, input: &Vec<String>) -> String {
     let mut valid = 0;
 
-    for line in input {
-        if valid_password(line) {
-            valid = valid + 1;
-        }
+    for l in input {
+      let line = create_line(l);
+      let occurences = get_number_of_occurences(&line);
+      if occurences >= line.lower && occurences <= line.upper {
+        valid = valid + 1;
+      }
     }
 
     valid.to_string()
@@ -22,9 +24,9 @@ impl Day for Day2 {
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let mut valid = 0;
 
-    for line in input {
-        if is_matching_only_once(get_lower_range(line), get_upper_range(line), 
-                                 get_char_to_check(line), get_password(line)) {
+    for l in input {
+      let line = create_line(l);
+        if is_matching_only_once(&line) {
             valid = valid + 1;
         }
     }
@@ -33,10 +35,20 @@ impl Day for Day2 {
   }
 }
 
-fn valid_password(line: &String) -> bool {
-    let occurences = get_number_of_occurences(get_char_to_check(line), &get_password(line));
+struct Line {
+  lower: usize,
+  upper: usize,
+  c: char,
+  password: String,
+}
 
-    occurences >= get_lower_range(line) && occurences <= get_upper_range(line)
+fn create_line(input: &String) -> Line {
+  Line {
+    lower: get_lower_range(input),
+    upper: get_upper_range(input),
+    c: get_char_to_check(input),
+    password: get_password(input),
+  }
 }
 
 fn get_lower_range(line: &String) -> usize {
@@ -61,19 +73,19 @@ fn get_char_to_check(line: &String) -> char {
     split.next().unwrap().chars().next().unwrap()
 }
 
-fn get_password(line: &String) -> &str {
+fn get_password<'a>(line: &String) -> String {
     let mut split = line.split(" ");
     split.next();
     split.next();
 
-    split.next().unwrap()
+    String::from(split.next().unwrap())
 }
 
-fn get_number_of_occurences(c: char, string: &str) -> usize {
+fn get_number_of_occurences(line: &Line) -> usize {
     let mut occurences = 0;
 
-    for c2 in string.chars() {
-        if c == c2 {
+    for c in line.password.chars() {
+        if line.c == c {
             occurences = occurences + 1;
         }
     }
@@ -81,17 +93,17 @@ fn get_number_of_occurences(c: char, string: &str) -> usize {
     occurences
 }
 
-fn is_matching_only_once(first: usize, second: usize, c: char, string: &str) -> bool {
-    let mut chars = string.chars();
+fn is_matching_only_once(line: &Line) -> bool {
+    let mut chars = line.password.chars();
 
-    let first_char = chars.nth(first - 1).unwrap();
-    let second_char = chars.nth(second - 1 - first).unwrap();
+    let first_char = chars.nth(line.lower - 1).unwrap();
+    let second_char = chars.nth(line.upper - 1 - line.lower).unwrap();
 
-    if first_char == c && second_char != c {
+    if first_char == line.c && second_char != line.c {
         return true
     }
 
-    if first_char != c && second_char == c {
+    if first_char != line.c && second_char == line.c {
         return true
     }
 
@@ -134,14 +146,18 @@ mod tests {
 
   #[test]
   fn test_get_number_of_occurences() {
-      assert_eq!(get_number_of_occurences('c', "cccbbbaaac"), 4);
+    let line = create_line(&String::from("1-2 c: cccbbbaaac"));
+      assert_eq!(get_number_of_occurences(&line), 4);
   }
 
   #[test]
   fn test_is_matching_only_once() {
-    assert_eq!(is_matching_only_once(1, 3, 'a', "abcde"), true);
-    assert_eq!(is_matching_only_once(1, 3, 'b', "cdefg"), false);
-    assert_eq!(is_matching_only_once(2, 9, 'c', "ccccccccc"), false);
+    let line1 = create_line(&String::from("1-3 a: abcde"));
+    assert_eq!(is_matching_only_once(&line1), true);
+    let line2 = create_line(&String::from("1-3 b: cdefg"));
+    assert_eq!(is_matching_only_once(&line2), false);
+    let line3 = create_line(&String::from("2-9 c: ccccccccc"));
+    assert_eq!(is_matching_only_once(&line3), false);
   }
 
   #[test]
