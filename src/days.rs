@@ -2,6 +2,7 @@ pub mod day_1;
 pub mod day_2;
 
 pub trait Day {
+  fn day_num(&self) -> usize;
   fn puzzle_1(&self, input: &Vec<String>) -> String;
   fn puzzle_2(&self, input: &Vec<String>) -> String;
 }

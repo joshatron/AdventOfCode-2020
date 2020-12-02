@@ -4,6 +4,10 @@ use crate::days::Day;
 pub struct Day1 {}
 
 impl Day for Day1 {
+  fn day_num(&self) -> usize {
+    1
+  }
+
   fn puzzle_1(&self, input: &Vec<String>) -> String {
     let ints = days::input_to_ints(input);
 

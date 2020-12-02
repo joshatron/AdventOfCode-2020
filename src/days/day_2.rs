@@ -3,6 +3,10 @@ use crate::days::Day;
 pub struct Day2 {}
 
 impl Day for Day2 {
+  fn day_num(&self) -> usize {
+    2
+  }
+
   fn puzzle_1(&self, input: &Vec<String>) -> String {
     let mut valid = 0;
 
