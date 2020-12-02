@@ -13,12 +13,6 @@ pub fn get_day_input(day: i32) -> Vec<String> {
      .collect()
 }
 
-pub fn get_day_input_ints(day: i32) -> Vec<i64> {
-  get_day_input(day).iter()
-    .map(|l| l.parse::<i64>().unwrap())
-    .collect()
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -32,12 +26,5 @@ mod tests {
     for l in &lines {
       l.parse::<i64>().unwrap();
     }
-  }
-
-  #[test]
-  fn day_1_input_ints() {
-    let lines = get_day_input_ints(1);
-
-    assert_eq!(lines.len(), 200);
   }
 }

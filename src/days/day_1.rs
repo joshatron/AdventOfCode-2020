@@ -1,33 +1,43 @@
-pub fn puzzle_1(input: &Vec<i64>) -> i64 {
-  for (i, &num) in input.iter().enumerate() {
-    let rest = &input[(i + 1)..];
+use crate::days;
+use crate::days::Day;
 
-    for other in rest {
-      if num + other == 2020 {
-        return num * other;
-      }
-    }
-  }
+pub struct Day1 {}
 
-  0
-}
+impl Day for Day1 {
+  fn puzzle_1(&self, input: &Vec<String>) -> String {
+    let ints = days::input_to_ints(input);
 
-pub fn puzzle_2(input: &Vec<i64>) -> i64 {
-  for (i, &first) in input.iter().enumerate() {
-    let second_set = &input[(i + 1)..];
+    for (i, &num) in ints.iter().enumerate() {
+      let rest = &ints[(i + 1)..];
 
-    for (j, &second) in second_set.iter().enumerate() {
-      let third_set = &second_set[(j + 1)..];
-
-      for third in third_set {
-        if first + second + third == 2020 {
-          return first * second * third;
+      for other in rest {
+        if num + other == 2020 {
+          return (num * other).to_string();
         }
       }
-    } 
-  }
+    }
 
-  0
+    String::from("")
+  }
+  
+  fn puzzle_2(&self, input: &Vec<String>) -> String {
+    let ints = days::input_to_ints(input);
+
+    for (i, &first) in ints.iter().enumerate() {
+      let second_set = &ints[(i + 1)..];
+
+      for (j, &second) in second_set.iter().enumerate() {
+        let third_set = &second_set[(j + 1)..];
+
+        for third in third_set {
+          if first + second + third == 2020 {
+            return (first * second * third).to_string();
+          }
+        }
+      } 
+    }
+    String::from("")
+  }
 }
 
 #[cfg(test)]
@@ -36,15 +46,15 @@ mod tests {
 
   #[test]
   fn puzzle_1_sample_input() {
-    let input = vec![1721, 979, 366, 299, 675, 1456];
+    let input = vec![String::from("1721"), String::from("979"), String::from("366"), String::from("299"), String::from("675"), String::from("1456")];
 
-    assert_eq!(puzzle_1(&input), 514579);
+    assert_eq!(Day1{}.puzzle_1(&input), String::from("514579"));
   }
 
   #[test]
   fn puzzle_2_sample_input() {
-    let input = vec![1721, 979, 366, 299, 675, 1456];
+    let input = vec![String::from("1721"), String::from("979"), String::from("366"), String::from("299"), String::from("675"), String::from("1456")];
 
-    assert_eq!(puzzle_2(&input), 241861950);
+    assert_eq!(Day1{}.puzzle_2(&input), String::from("241861950"));
   }
 }
