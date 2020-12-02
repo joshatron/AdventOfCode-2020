@@ -13,4 +13,12 @@ pub fn run() {
   println!("  Puzzle 1: {}", days::day_1::Day1{}.puzzle_1(&day_1_input));
   println!("  Puzzle 2: {}", days::day_1::Day1{}.puzzle_2(&day_1_input));
   println!("");
+
+  let day_2_input = input::get_day_input(2);
+  println!("Day 2");
+  println!("-----");
+  println!("  Puzzle 1: {}", days::day_2::Day2{}.puzzle_1(&day_2_input));
+  println!("  Puzzle 2: {}", days::day_2::Day2{}.puzzle_2(&day_2_input));
+  println!("");
+
 }
