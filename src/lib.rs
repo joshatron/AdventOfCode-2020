@@ -10,6 +10,7 @@ pub fn run() {
   let mut all_days: Vec<Box<dyn Day>> = Vec::new();
   all_days.push(Box::new(days::day_1::Day1{}));
   all_days.push(Box::new(days::day_2::Day2{}));
+  all_days.push(Box::new(days::day_3::Day3{}));
 
   for day in all_days {
     let day_input = input::get_day_input(day.day_num());
