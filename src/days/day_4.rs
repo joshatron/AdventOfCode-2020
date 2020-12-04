@@ -48,7 +48,7 @@ fn is_valid(passport: &Passport) -> bool {
   is_passport_id_valid(&passport.passport_id)
 }
 
-fn is_num_valid(num: &String, start: usize, end: usize) -> bool {
+fn is_num_valid(num: &str, start: usize, end: usize) -> bool {
   match num.parse::<usize>() {
     Ok(y) => {
       if y < start || y > end {
@@ -61,17 +61,17 @@ fn is_num_valid(num: &String, start: usize, end: usize) -> bool {
   true
 }
 
-fn is_height_valid(height: &String) -> bool {
+fn is_height_valid(height: &str) -> bool {
   if height.ends_with("in") {
-    is_num_valid(&String::from(&height[..(height.len() - 2)]), 59, 76)
+    is_num_valid(&height[..(height.len() - 2)], 59, 76)
   } else if height.ends_with("cm") {
-    is_num_valid(&String::from(&height[..(height.len() - 2)]), 150, 193)
+    is_num_valid(&height[..(height.len() - 2)], 150, 193)
   } else {
     false
   }
 }
 
-fn is_hair_color_valid(hair_color: &String) -> bool {
+fn is_hair_color_valid(hair_color: &str) -> bool {
   if hair_color.len() != 7 {
     return false;
   }
@@ -93,12 +93,12 @@ fn is_hair_color_valid(hair_color: &String) -> bool {
   true
 }
 
-fn is_eye_color_valid(eye_color: &String) -> bool {
+fn is_eye_color_valid(eye_color: &str) -> bool {
   eye_color == "amb" || eye_color == "blu" || eye_color == "brn" || eye_color == "gry" ||
   eye_color == "grn" || eye_color == "hzl" || eye_color == "oth"
 }
 
-fn is_passport_id_valid(passport_id: &String) -> bool {
+fn is_passport_id_valid(passport_id: &str) -> bool {
   if passport_id.len() != 9 {
     return false;
   }
@@ -128,7 +128,7 @@ fn create_passports(input: &Vec<String>) -> Vec<Passport> {
 
   let mut current_passport = String::from("");
   for line in input {
-    if line == &String::from("") {
+    if line == "" {
       passports.push(get_passport(&current_passport));
       current_passport = String::from("");
     } else {
@@ -137,14 +137,14 @@ fn create_passports(input: &Vec<String>) -> Vec<Passport> {
     }
   }
 
-  if current_passport != String::from("") {
+  if current_passport != "" {
     passports.push(get_passport(&current_passport));
   }
 
   passports
 }
 
-fn get_passport(line: &String) -> Passport {
+fn get_passport(line: &str) -> Passport {
   let mut passport = empty_passport();
 
   for field in separate_passport_fields(line) {
@@ -167,12 +167,11 @@ fn empty_passport() -> Passport {
   }
 }
 
-fn separate_passport_fields(fields: &String) -> Vec<&str> {
+fn separate_passport_fields(fields: &str) -> Vec<&str> {
   fields.trim().split(' ').collect()
 }
 
 fn add_field_to_passport(passport: &mut Passport, field: &str) {
-
   match &field[..3] {
     "byr" => passport.birth_year = get_value_from_field(field),
     "iyr" => passport.issue_year = get_value_from_field(field),
@@ -216,23 +215,23 @@ mod tests {
   fn test_create_passports() {
     let passports = create_passports(&sample_input_1());
     
-    assert_eq!(passports[0].birth_year, String::from("1937"));
-    assert_eq!(passports[0].issue_year, String::from("2017"));
-    assert_eq!(passports[0].expiration_year, String::from("2020"));
-    assert_eq!(passports[0].height, String::from("183cm"));
-    assert_eq!(passports[0].hair_color, String::from("#fffffd"));
-    assert_eq!(passports[0].eye_color, String::from("gry"));
-    assert_eq!(passports[0].passport_id, String::from("860033327"));
-    assert_eq!(passports[0].country_id, String::from("147"));
+    assert_eq!(passports[0].birth_year, "1937");
+    assert_eq!(passports[0].issue_year, "2017");
+    assert_eq!(passports[0].expiration_year, "2020");
+    assert_eq!(passports[0].height, "183cm");
+    assert_eq!(passports[0].hair_color, "#fffffd");
+    assert_eq!(passports[0].eye_color, "gry");
+    assert_eq!(passports[0].passport_id, "860033327");
+    assert_eq!(passports[0].country_id, "147");
 
-    assert_eq!(passports[3].birth_year, String::from(""));
-    assert_eq!(passports[3].issue_year, String::from("2011"));
-    assert_eq!(passports[3].expiration_year, String::from("2025"));
-    assert_eq!(passports[3].height, String::from("59in"));
-    assert_eq!(passports[3].hair_color, String::from("#cfa07d"));
-    assert_eq!(passports[3].eye_color, String::from("brn"));
-    assert_eq!(passports[3].passport_id, String::from("166559648"));
-    assert_eq!(passports[3].country_id, String::from(""));
+    assert_eq!(passports[3].birth_year, "");
+    assert_eq!(passports[3].issue_year, "2011");
+    assert_eq!(passports[3].expiration_year, "2025");
+    assert_eq!(passports[3].height, "59in");
+    assert_eq!(passports[3].hair_color, "#cfa07d");
+    assert_eq!(passports[3].eye_color, "brn");
+    assert_eq!(passports[3].passport_id, "166559648");
+    assert_eq!(passports[3].country_id, "");
   }
 
   #[test]
