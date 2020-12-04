@@ -16,7 +16,6 @@ impl Day for Day3 {
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let forest = generate_forest(input);
 
-
     (get_trees_in_path(&forest, 1, 1) * get_trees_in_path(&forest, 3, 1) * get_trees_in_path(&forest, 5, 1) *
      get_trees_in_path(&forest, 7, 1) * get_trees_in_path(&forest, 1, 2)).to_string()
   }
