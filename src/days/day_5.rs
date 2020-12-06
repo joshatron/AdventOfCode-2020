@@ -28,10 +28,8 @@ impl Day for Day5 {
     
     let mut ids = seat_ids.iter().peekable();
     while let Some(id) = ids.next() {
-      if ids.peek().is_some() {
-        if **ids.peek().unwrap_or(&&9999999) - id == 2 {
-          return (id + 1).to_string();
-        }
+      if **ids.peek().unwrap_or(&&9999999) - id == 2 {
+        return (id + 1).to_string();
       }
     }
 
