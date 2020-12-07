@@ -272,6 +272,6 @@ mod tests {
 
   #[test]
   fn test_puzzle_2() {
-    assert_eq!(Day4{}.puzzle_2(&sample_input_2()), String::from("4"));
+    assert_eq!(Day4{}.puzzle_2(&sample_input_2()), "4");
   }
 }
