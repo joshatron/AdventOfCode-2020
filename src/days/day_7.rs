@@ -85,13 +85,11 @@ fn can_hold_color(bag: &Bag, color: &str) -> bool {
 }
 
 fn create_all_bags(input: &Vec<String>) -> Bags {
-  let mut bag_hash = HashMap::new();
-  for bag in input.iter().map(|l| create_bag(&l)) {
-    bag_hash.insert(String::from(&bag.color), bag);
-  }
-
   Bags{
-    bags: bag_hash
+    bags: input.iter()
+      .map(|l| create_bag(&l))
+      .map(|b| (String::from(&b.color), b))
+      .collect()
   }
 }
 
