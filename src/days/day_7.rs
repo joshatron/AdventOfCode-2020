@@ -1,6 +1,7 @@
 use crate::days::Day;
 use std::iter::Peekable;
 use std::str::Split;
+use std::collections::HashMap;
 
 pub struct Day7 {}
 
@@ -38,7 +39,7 @@ impl Day for Day7 {
 }
 
 struct Bags {
-  bags: Vec<Bag>,
+  bags: HashMap<String, Bag>,
 }
 
 impl Bags {
@@ -67,20 +68,14 @@ impl Bags {
   }
 
   fn get_parent_colors(&self, color: &str) -> Vec<&str> {
-    self.bags.iter()
+    self.bags.values()
       .filter(|b| can_hold_color(&b, color))
       .map(|b| &*b.color)
       .collect()
   }
 
-  fn get_color(&self, color: &str) -> Result<&Bag, &str> {
-    for bag in &self.bags {
-      if bag.color == color {
-        return Ok(&bag);
-      }
-    }
-
-    Err("color not found")
+  fn get_color(&self, color: &str) -> Option<&Bag> {
+    self.bags.get(color)
   }
 }
 
@@ -90,8 +85,13 @@ fn can_hold_color(bag: &Bag, color: &str) -> bool {
 }
 
 fn create_all_bags(input: &Vec<String>) -> Bags {
+  let mut bag_hash = HashMap::new();
+  for bag in input.iter().map(|l| create_bag(&l)) {
+    bag_hash.insert(String::from(&bag.color), bag);
+  }
+
   Bags{
-    bags: input.iter().map(|l| create_bag(&l)).collect()
+    bags: bag_hash
   }
 }
 
@@ -186,8 +186,8 @@ mod tests {
   fn test_create_all_bags() {
     let bags = create_all_bags(&sample_input());
     assert_eq!(bags.bags.len(), 9);
-    assert_eq!(bags.bags[0].color, "light red");
-    assert_eq!(bags.bags[8].color, "dotted black");
+    assert_eq!(bags.get_color("light red").unwrap().color, "light red");
+    assert_eq!(bags.get_color("dotted black").unwrap().color, "dotted black");
   }
 
   #[test]
