@@ -191,13 +191,16 @@ mod tests {
   #[test]
   fn test_get_parent_colors() {
     let bags = create_all_bags(&sample_input());
-    assert_eq!(bags.get_parent_colors("shiny gold"), vec!["bright white", "muted yellow"]);
+    assert_eq!(bags.get_parent_colors("shiny gold").len(), 2);
+    assert_eq!(bags.get_parent_colors("shiny gold").contains(&"bright white"), true);
+    assert_eq!(bags.get_parent_colors("shiny gold").contains(&"muted yellow"), true);
   }
 
   #[test]
   fn test_get_all_parents_of_color() {
     let bags = create_all_bags(&sample_input());
     let ancestors = bags.get_ancestors_of_color("shiny gold");
+    assert_eq!(ancestors.len(), 4);
     assert_eq!(ancestors.contains(&"bright white"), true);
     assert_eq!(ancestors.contains(&"muted yellow"), true);
     assert_eq!(ancestors.contains(&"dark orange"), true);
