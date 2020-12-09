@@ -1,5 +1,6 @@
 use crate::days::Day;
 use crate::days;
+use std::cmp;
 
 pub struct Day9 {}
 
@@ -15,8 +16,35 @@ impl Day for Day9 {
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    String::from("")
+    let nums = days::input_to_ints(input);
+
+    let not_matching = find_first_not_matching(&nums, 25);
+    let adding_to = find_contiguous_adding_to_num(&nums, not_matching).unwrap();
+
+    (adding_to.iter().min().unwrap() + adding_to.iter().max().unwrap()).to_string()
   }
+}
+
+fn find_contiguous_adding_to_num<'a>(nums: &'a Vec<i64>, num: i64) -> Result<&'a [i64], String> {
+  for i in 0..nums.len() {
+    for j in (i+1)..nums.len() {
+      let slice = &nums[i..j];
+      let added = add_slice(slice);
+
+      if added > num {
+        break;
+      } else if added == num {
+        return Ok(slice);
+      }
+    }
+  }
+
+  Err(String::from("Could not find contiguous numbers adding to value"))
+}
+
+fn add_slice(slice: &[i64]) -> i64 {
+  slice.iter()
+    .fold(0, |acc, n| acc + n)
 }
 
 fn find_first_not_matching(nums: &Vec<i64>, previous: usize) -> i64 {
@@ -92,5 +120,11 @@ mod tests {
   #[test]
   fn test_find_first_not_matching() {
     assert_eq!(find_first_not_matching(&days::input_to_ints(&sample_input()), 5), 127);
+  }
+
+  #[test]
+  fn test_find_contiguous_adding_to_num() {
+    let expected_result = vec![15, 25, 47, 40];
+    assert_eq!(find_contiguous_adding_to_num(&days::input_to_ints(&sample_input()), 127), Ok(&expected_result[0..4]));
   }
 }
