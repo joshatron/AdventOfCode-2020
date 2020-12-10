@@ -1,6 +1,5 @@
 use crate::days::Day;
 use crate::days;
-use std::cmp;
 
 pub struct Day9 {}
 

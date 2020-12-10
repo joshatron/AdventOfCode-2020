@@ -7,6 +7,7 @@ pub mod day_6;
 pub mod day_7;
 pub mod day_8;
 pub mod day_9;
+pub mod day_10;
 
 pub trait Day {
   fn day_num(&self) -> usize;
@@ -25,6 +26,7 @@ pub fn get_days() -> Vec<Box<dyn Day>> {
     Box::new(day_7::Day7{}),
     Box::new(day_8::Day8{}),
     Box::new(day_9::Day9{}),
+    Box::new(day_10::Day10{}),
   ]
 }
 
