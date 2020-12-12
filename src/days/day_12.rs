@@ -41,20 +41,17 @@ fn create_ship() -> Ship {
 
 #[derive(Debug, PartialEq)]
 enum Instruction {
-  North(usize),
-  South(usize),
-  East(usize),
-  West(usize),
-  Left(usize),
-  Right(usize),
-  Forward(usize),
+  Move(Direction, isize),
+  Left(isize),
+  Right(isize),
+  Forward(isize),
   None
 }
 
 fn parse_instruction(line: &str) -> Instruction {
   let num = line[1..].parse::<usize>().unwrap();
   match &line[0..1] {
-    "N" => Instruction::North(num),
+    "N" => Instruction::Move(Direction::North, num),
     "S" => Instruction::South(num),
     "E" => Instruction::East(num),
     "W" => Instruction::West(num),
@@ -71,10 +68,10 @@ mod tests {
 
   #[test]
   fn test_parse_instruction() {
-    assert_eq!(parse_instruction("N3"), Instruction::North(3));
-    assert_eq!(parse_instruction("S12"), Instruction::South(12));
-    assert_eq!(parse_instruction("E1"), Instruction::East(1));
-    assert_eq!(parse_instruction("W197"), Instruction::West(197));
+    assert_eq!(parse_instruction("N3"), Instruction::Move(Direction::North, 3));
+    assert_eq!(parse_instruction("S12"), Instruction::Move(Direction::South, 12));
+    assert_eq!(parse_instruction("E1"), Instruction::Move(Direction::East, 1));
+    assert_eq!(parse_instruction("W197"), Instruction::Move(Direction::West, 197));
     assert_eq!(parse_instruction("L90"), Instruction::Left(1));
     assert_eq!(parse_instruction("R270"), Instruction::Right(3));
     assert_eq!(parse_instruction("F8"), Instruction::Forward(8));
