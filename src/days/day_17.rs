@@ -1,4 +1,5 @@
 use crate::days::Day;
+use std::collections::HashSet;
 
 pub struct Day17 {}
 
@@ -27,26 +28,20 @@ impl Day for Day17 {
 }
 
 struct Area {
-  active_points: Vec<Point>,
+  active_points: HashSet<Point>,
 }
 
 impl Area {
   fn set_active(&mut self, point: Point) {
-    self.active_points.push(point);
+    self.active_points.insert(point);
   }
 
   fn is_active(&self, point: &Point) -> bool {
-    for p in &self.active_points {
-      if p == point {
-        return true;
-      }
-    }
-
-    false
+    self.active_points.contains(point)
   }
 
   fn do_cycle(&mut self) {
-    let mut new_active = Vec::new();
+    let mut new_active = HashSet::new();
 
     for z in (self.active_points.iter().map(|p| p.z).min().unwrap() - 1)..(self.active_points.iter().map(|p| p.z).max().unwrap() + 2) {
       for y in (self.active_points.iter().map(|p| p.y).min().unwrap() - 1)..(self.active_points.iter().map(|p| p.y).max().unwrap() + 2) {
@@ -55,7 +50,7 @@ impl Area {
           let is_active = self.is_active(&point);
           if (is_active && self.surrounded_by(&point, 2, 3)) ||
              (!is_active && self.surrounded_by(&point, 3, 3)) {
-            new_active.push(point);
+            new_active.insert(point);
           } 
         }
       }
@@ -82,7 +77,7 @@ impl Area {
 
 fn init_area(input: &Vec<String>) -> Area {
   let mut area = Area {
-    active_points: Vec::new(),
+    active_points: HashSet::new(),
   };
 
   for (y, line) in input.iter().enumerate() {
@@ -96,7 +91,7 @@ fn init_area(input: &Vec<String>) -> Area {
   area
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Point {
   x: isize,
   y: isize,
@@ -131,26 +126,20 @@ fn init_point(x: isize, y: isize, z: isize) -> Point {
 }
 
 struct Area4D {
-  active_points: Vec<Point4D>,
+  active_points: HashSet<Point4D>,
 }
 
 impl Area4D {
   fn set_active(&mut self, point: Point4D) {
-    self.active_points.push(point);
+    self.active_points.insert(point);
   }
 
   fn is_active(&self, point: &Point4D) -> bool {
-    for p in &self.active_points {
-      if p == point {
-        return true;
-      }
-    }
-
-    false
+    self.active_points.contains(point)
   }
 
   fn do_cycle(&mut self) {
-    let mut new_active = Vec::new();
+    let mut new_active = HashSet::new();
     let max_z = self.active_points.iter().map(|p| p.z).max().unwrap() + 2;
     let min_y = self.active_points.iter().map(|p| p.y).min().unwrap() - 1;
     let max_y = self.active_points.iter().map(|p| p.y).max().unwrap() + 2;
@@ -167,18 +156,18 @@ impl Area4D {
             if (is_active && self.surrounded_by(&point, 2, 3)) ||
               (!is_active && self.surrounded_by(&point, 3, 3)) {
               if z != 0 && w != 0 {
-                new_active.push(init_point_4d(x, y, z, w));
-                new_active.push(init_point_4d(x, y, z * -1, w));
-                new_active.push(init_point_4d(x, y, z, w * -1));
-                new_active.push(init_point_4d(x, y, z * -1, w * -1));
+                new_active.insert(init_point_4d(x, y, z, w));
+                new_active.insert(init_point_4d(x, y, z * -1, w));
+                new_active.insert(init_point_4d(x, y, z, w * -1));
+                new_active.insert(init_point_4d(x, y, z * -1, w * -1));
               } else if z != 0 {
-                new_active.push(init_point_4d(x, y, z, w));
-                new_active.push(init_point_4d(x, y, z * -1, w));
+                new_active.insert(init_point_4d(x, y, z, w));
+                new_active.insert(init_point_4d(x, y, z * -1, w));
               } else if w != 0 {
-                new_active.push(init_point_4d(x, y, z, w));
-                new_active.push(init_point_4d(x, y, z, w * -1));
+                new_active.insert(init_point_4d(x, y, z, w));
+                new_active.insert(init_point_4d(x, y, z, w * -1));
               } else {
-                new_active.push(point);
+                new_active.insert(point);
               }
             } 
           }
@@ -207,7 +196,7 @@ impl Area4D {
 
 fn init_area_4d(input: &Vec<String>) -> Area4D {
   let mut area = Area4D {
-    active_points: Vec::new(),
+    active_points: HashSet::new(),
   };
 
   for (y, line) in input.iter().enumerate() {
@@ -221,7 +210,7 @@ fn init_area_4d(input: &Vec<String>) -> Area4D {
   area
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Point4D {
   x: isize,
   y: isize,
