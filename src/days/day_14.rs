@@ -10,7 +10,7 @@ impl Day for Day14 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let mut computer = create_computer();
+    let mut computer = Computer::new();
     for command in input.iter().map(|l| parse_command(l)) {
       computer.run_command(command);
     }
@@ -19,7 +19,7 @@ impl Day for Day14 {
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let mut computer = create_computer_2();
+    let mut computer = Computer2::new();
     for command in input.iter().map(|l| parse_command(l)) {
       computer.run_command(command);
     }
@@ -57,14 +57,14 @@ impl Computer {
   fn get_bitmasked_number(&self, value: u64) -> u64 {
     (value | self.bitmask_ones) & self.bitmask_zeros
   }
-}
 
 
-fn create_computer() -> Computer {
-  Computer {
-    memory: HashMap::new(),
-    bitmask_ones: 0b0,
-    bitmask_zeros: !0b0,
+  fn new() -> Computer {
+    Computer {
+      memory: HashMap::new(),
+      bitmask_ones: 0b0,
+      bitmask_zeros: !0b0,
+    }
   }
 }
 
@@ -115,13 +115,12 @@ impl Computer2 {
     }
   }
 
-}
-
-fn create_computer_2() -> Computer2 {
-  Computer2 {
-    memory: HashMap::new(),
-    bitmask_ones: 0b0,
-    x_bits: vec![],
+  fn new() -> Computer2 {
+    Computer2 {
+      memory: HashMap::new(),
+      bitmask_ones: 0b0,
+      x_bits: vec![],
+    }
   }
 }
 
@@ -173,7 +172,7 @@ mod tests {
 
   #[test]
   fn test_create_computer() {
-    let computer = create_computer();
+    let computer = Computer::new();
     assert_eq!(computer.memory.len(), 0);
     assert_eq!(computer.bitmask_ones, 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
     assert_eq!(computer.bitmask_zeros, 0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111);
@@ -189,7 +188,7 @@ mod tests {
 
   #[test]
   fn test_run_command() {
-    let mut computer = create_computer();
+    let mut computer = Computer::new();
     computer.run_command(Command::SetMask("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X"));
     assert_eq!(computer.bitmask_ones, 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0100_0000);
     assert_eq!(computer.bitmask_zeros, 0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1101);
@@ -217,7 +216,7 @@ mod tests {
 
   #[test]
   fn test_create_computer_2() {
-    let computer = create_computer_2();
+    let computer = Computer2::new();
     assert_eq!(computer.memory.len(), 0);
     assert_eq!(computer.bitmask_ones, 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
     assert_eq!(computer.x_bits, vec![]);
@@ -225,7 +224,7 @@ mod tests {
 
   #[test]
   fn test_run_command_2() {
-    let mut computer = create_computer_2();
+    let mut computer = Computer2::new();
     computer.run_command(Command::SetMask("000000000000000000000000000000X1001X"));
     assert_eq!(computer.bitmask_ones, 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0001_0010);
     assert_eq!(computer.x_bits, vec![0, 5]);

@@ -8,7 +8,7 @@ impl Day for Day8 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let mut program = input_program(input);
+    let mut program = Program::parse(input);
 
     String::from(program.run_till_terminate().expect_err("Should have errored out").to_string())
   }
@@ -25,7 +25,7 @@ impl Day for Day8 {
         var_input[i] = String::from("nop +0");
       }
 
-      let mut program = input_program(&var_input);
+      let mut program = Program::parse(&var_input);
 
       match program.run_till_terminate() {
         Ok(n) => return n.to_string(),
@@ -77,14 +77,13 @@ impl Program {
       },
     }
   }
-}
 
-
-fn input_program(input: &Vec<String>) -> Program {
-  Program {
-    lines: input.iter().map(|l| line_to_program_line(l)).collect(),
-    acc: 0,
-    current_line: 0,
+  fn parse(input: &Vec<String>) -> Program {
+    Program {
+      lines: input.iter().map(|l| ProgramLine::parse(l)).collect(),
+      acc: 0,
+      current_line: 0,
+    }
   }
 }
 
@@ -93,10 +92,12 @@ struct ProgramLine {
   visited: bool,
 }
 
-fn line_to_program_line(line: &str) -> ProgramLine {
-  ProgramLine{
-    instruction: to_instruction(line),
-    visited: false,
+impl ProgramLine {
+  fn parse(line: &str) -> ProgramLine {
+    ProgramLine{
+      instruction: parse_instruction(line),
+      visited: false,
+    }
   }
 }
 
@@ -107,7 +108,7 @@ enum Instruction {
   Jmp(usize, bool),
 }
 
-fn to_instruction(line: &str) -> Instruction {
+fn parse_instruction(line: &str) -> Instruction {
   match &line[0..3] {
     "nop" => Instruction::Nop,
     "acc" => Instruction::Acc(line[4..].parse::<i64>().unwrap()),
@@ -122,20 +123,20 @@ mod tests {
 
   #[test]
   fn test_to_instruction_nop() {
-    assert_eq!(to_instruction("nop +0"), Instruction::Nop);
+    assert_eq!(parse_instruction("nop +0"), Instruction::Nop);
   }
 
   #[test]
   fn test_to_instruction_acc() {
-    assert_eq!(to_instruction("acc +1"), Instruction::Acc(1));
-    assert_eq!(to_instruction("acc +5"), Instruction::Acc(5));
-    assert_eq!(to_instruction("acc -99"), Instruction::Acc(-99));
+    assert_eq!(parse_instruction("acc +1"), Instruction::Acc(1));
+    assert_eq!(parse_instruction("acc +5"), Instruction::Acc(5));
+    assert_eq!(parse_instruction("acc -99"), Instruction::Acc(-99));
   }
 
   #[test]
   fn test_to_instruction_jmp() {
-    assert_eq!(to_instruction("jmp +5"), Instruction::Jmp(5, true));
-    assert_eq!(to_instruction("jmp -86"), Instruction::Jmp(86, false));
+    assert_eq!(parse_instruction("jmp +5"), Instruction::Jmp(5, true));
+    assert_eq!(parse_instruction("jmp -86"), Instruction::Jmp(86, false));
   }
 
   fn sample_input() -> Vec<String> {
@@ -154,7 +155,7 @@ mod tests {
 
   #[test]
   fn test_input_program() {
-    let program = input_program(&sample_input());
+    let program = Program::parse(&sample_input());
     assert_eq!(program.acc, 0);
     assert_eq!(program.current_line, 0);
     assert_eq!(program.lines.len(), 9);
@@ -166,7 +167,7 @@ mod tests {
 
   #[test]
   fn test_run_next_line() {
-    let mut program = input_program(&sample_input());
+    let mut program = Program::parse(&sample_input());
     program.run_next_line();
     assert_eq!(program.acc, 0);
     assert_eq!(program.current_line, 1);

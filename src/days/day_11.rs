@@ -113,6 +113,28 @@ impl WaitingArea {
 
     total
   }
+
+  fn parse(input: &Vec<String>) -> WaitingArea {
+    let mut spots = Vec::new();
+
+    for line in input {
+      let mut row = Vec::new();
+      for c in line.chars() {
+        match c {
+          'L' => row.push(Spot::Empty),
+          '.' => row.push(Spot::Floor),
+          '#' => row.push(Spot::Filled),
+          _ => row.push(Spot::Floor)
+        }
+      }
+
+      spots.push(row);
+    }
+
+    WaitingArea{
+      spots: spots
+    }
+  }
 }
 
 enum Direction {
@@ -173,35 +195,13 @@ enum Spot {
   Filled
 }
 
-fn create_waiting_area(input: &Vec<String>) -> WaitingArea {
-  let mut spots = Vec::new();
-
-  for line in input {
-    let mut row = Vec::new();
-    for c in line.chars() {
-      match c {
-        'L' => row.push(Spot::Empty),
-        '.' => row.push(Spot::Floor),
-        '#' => row.push(Spot::Filled),
-        _ => row.push(Spot::Floor)
-      }
-    }
-
-    spots.push(row);
-  }
-
-  WaitingArea{
-    spots: spots
-  }
-}
-
 enum ArrangementMethod {
   One,
   Two
 }
 
 fn get_final_arrangement(input: &Vec<String>, arrangement: ArrangementMethod) -> WaitingArea {
-    let mut current = create_waiting_area(input);
+    let mut current = WaitingArea::parse(input);
     let mut next = get_next_arrangment(&current, &arrangement);
 
     while current != next {
@@ -283,7 +283,7 @@ mod tests {
 
   #[test]
   fn test_create_waiting_area() {
-    let waiting_area = create_waiting_area(&sample_input());
+    let waiting_area = WaitingArea::parse(&sample_input());
     assert_eq!(waiting_area.width(), 10);
     assert_eq!(waiting_area.height(), 10);
     assert_eq!(waiting_area.at_spot(0, 0), &Spot::Empty);
@@ -309,7 +309,7 @@ mod tests {
 
   #[test]
   fn test_get_next_arrangement_1() {
-    let mut waiting_area = create_waiting_area(&sample_input());
+    let mut waiting_area = WaitingArea::parse(&sample_input());
     waiting_area = get_next_arrangment(&waiting_area, &ArrangementMethod::One);
     assert_eq!(waiting_area.at_spot(0, 0), &Spot::Filled);
     assert_eq!(waiting_area.at_spot(1, 0), &Spot::Floor);
@@ -325,7 +325,7 @@ mod tests {
 
   #[test]
   fn test_get_next_arrangement_2() {
-    let mut waiting_area = create_waiting_area(&sample_input());
+    let mut waiting_area = WaitingArea::parse(&sample_input());
     waiting_area = get_next_arrangment(&waiting_area, &ArrangementMethod::Two);
     waiting_area = get_next_arrangment(&waiting_area, &ArrangementMethod::Two);
     assert_eq!(waiting_area.at_spot(0, 0), &Spot::Filled);

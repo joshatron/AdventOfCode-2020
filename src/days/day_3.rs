@@ -8,13 +8,13 @@ impl Day for Day3 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let forest = generate_forest(input);
+    let forest = Forest::parse(input);
 
     get_trees_in_path(&forest, 3, 1).to_string()
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let forest = generate_forest(input);
+    let forest = Forest::parse(input);
 
     (get_trees_in_path(&forest, 1, 1) * get_trees_in_path(&forest, 3, 1) * get_trees_in_path(&forest, 5, 1) *
      get_trees_in_path(&forest, 7, 1) * get_trees_in_path(&forest, 1, 2)).to_string()
@@ -53,11 +53,11 @@ impl Forest {
   fn base_width(&self) -> usize {
     self.trees[0].len()
   }
-}
 
-fn generate_forest(input: &Vec<String>) -> Forest {
-  Forest{
-    trees: input_to_bools(input),
+  fn parse(input: &Vec<String>) -> Forest {
+    Forest{
+      trees: input_to_bools(input),
+    }
   }
 }
 
@@ -98,7 +98,7 @@ mod tests {
 
   #[test]
   fn test_generate_forest() {
-    let forest = generate_forest(&sample_input());
+    let forest = Forest::parse(&sample_input());
     assert_eq!(forest.trees[0][1], false);
     assert_eq!(forest.trees[0][2], true);
     assert_eq!(forest.trees[10][8], true);
@@ -107,7 +107,7 @@ mod tests {
 
   #[test]
   fn test_is_tree_at_loc() {
-    let forest = generate_forest(&sample_input());
+    let forest = Forest::parse(&sample_input());
     assert_eq!(forest.is_tree_at_loc(1, 0), false);
     assert_eq!(forest.is_tree_at_loc(2, 0), true);
     assert_eq!(forest.is_tree_at_loc(8, 10), true);

@@ -11,11 +11,11 @@ impl Day for Day7 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    create_all_bags(input).get_ancestors_of_color("shiny gold").len().to_string()
+    Bags::parse(input).get_ancestors_of_color("shiny gold").len().to_string()
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let bags = create_all_bags(input);
+    let bags = Bags::parse(input);
 
     let mut current_colors = vec![bags.get_color("shiny gold").unwrap()];
     let mut total_bags = 0;
@@ -77,6 +77,15 @@ impl Bags {
   fn get_color(&self, color: &str) -> Option<&Bag> {
     self.bags.get(color)
   }
+
+  fn parse(input: &Vec<String>) -> Bags {
+    Bags{
+      bags: input.iter()
+        .map(|l| Bag::parse(&l))
+        .map(|b| (String::from(&b.color), b))
+        .collect()
+    }
+  }
 }
 
 fn can_hold_color(bag: &Bag, color: &str) -> bool {
@@ -84,36 +93,29 @@ fn can_hold_color(bag: &Bag, color: &str) -> bool {
     .any(|h| h.color == color)
 }
 
-fn create_all_bags(input: &Vec<String>) -> Bags {
-  Bags{
-    bags: input.iter()
-      .map(|l| create_bag(&l))
-      .map(|b| (String::from(&b.color), b))
-      .collect()
-  }
-}
-
 struct Bag {
   color: String,
   holds: Vec<BagHolding>,
+}
+
+impl Bag {
+  fn parse(input: &str) -> Bag {
+    let mut words = input.split(" ").peekable();
+    let color = get_color(&mut words);
+    words.next();
+    words.next();
+
+    match words.peek().unwrap() {
+      &"no" => Bag {color: color, holds: vec![]},
+      _ => Bag {color: color, holds: get_holds(&mut words)}
+    }
+  }
 }
 
 #[derive(Debug, PartialEq)]
 struct BagHolding {
   color: String,
   quantity: usize,
-}
-
-fn create_bag(input: &str) -> Bag {
-  let mut words = input.split(" ").peekable();
-  let color = get_color(&mut words);
-  words.next();
-  words.next();
-
-  match words.peek().unwrap() {
-    &"no" => Bag {color: color, holds: vec![]},
-    _ => Bag {color: color, holds: get_holds(&mut words)}
-  }
 }
 
 fn get_holds(words: &mut Peekable<Split<&str>>) -> Vec<BagHolding> {
@@ -145,13 +147,13 @@ mod tests {
 
   #[test]
   fn test_create_bag_not_containing_other() {
-    let bag = create_bag("faded blue bags contain no other bags.");
+    let bag = Bag::parse("faded blue bags contain no other bags.");
     assert_eq!(bag.color, "faded blue");
   }
 
   #[test]
   fn test_create_bag_containing_one() {
-    let bag = create_bag("bright white bags contain 1 shiny gold bag.");
+    let bag = Bag::parse("bright white bags contain 1 shiny gold bag.");
     assert_eq!(bag.color, "bright white");
     assert_eq!(bag.holds.len(), 1);
     assert_eq!(bag.holds[0], BagHolding{color: String::from("shiny gold"), quantity: 1});
@@ -159,7 +161,7 @@ mod tests {
 
   #[test]
   fn test_create_bag_containing_multiple() {
-    let bag = create_bag("muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.");
+    let bag = Bag::parse("muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.");
     assert_eq!(bag.color, "muted yellow");
     assert_eq!(bag.holds.len(), 2);
     assert_eq!(bag.holds[0], BagHolding{color: String::from("shiny gold"), quantity: 2});
@@ -181,8 +183,8 @@ mod tests {
   }
 
   #[test]
-  fn test_create_all_bags() {
-    let bags = create_all_bags(&sample_input());
+  fn test_bags_parse() {
+    let bags = Bags::parse(&sample_input());
     assert_eq!(bags.bags.len(), 9);
     assert_eq!(bags.get_color("light red").unwrap().color, "light red");
     assert_eq!(bags.get_color("dotted black").unwrap().color, "dotted black");
@@ -190,7 +192,7 @@ mod tests {
 
   #[test]
   fn test_get_parent_colors() {
-    let bags = create_all_bags(&sample_input());
+    let bags = Bags::parse(&sample_input());
     assert_eq!(bags.get_parent_colors("shiny gold").len(), 2);
     assert_eq!(bags.get_parent_colors("shiny gold").contains(&"bright white"), true);
     assert_eq!(bags.get_parent_colors("shiny gold").contains(&"muted yellow"), true);
@@ -198,7 +200,7 @@ mod tests {
 
   #[test]
   fn test_get_all_parents_of_color() {
-    let bags = create_all_bags(&sample_input());
+    let bags = Bags::parse(&sample_input());
     let ancestors = bags.get_ancestors_of_color("shiny gold");
     assert_eq!(ancestors.len(), 4);
     assert_eq!(ancestors.contains(&"bright white"), true);
@@ -214,7 +216,7 @@ mod tests {
 
   #[test]
   fn test_get_color() {
-    let bags = create_all_bags(&sample_input());
+    let bags = Bags::parse(&sample_input());
     assert_eq!(bags.get_color("shiny gold").unwrap().color, "shiny gold");
     assert_eq!(bags.get_color("bright white").unwrap().color, "bright white");
     assert_eq!(bags.get_color("light red").unwrap().color, "light red");

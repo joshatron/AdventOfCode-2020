@@ -8,7 +8,7 @@ impl Day for Day16 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let taf = parse_tickets_and_fields(input);
+    let taf = TicketsAndFields::parse(input);
 
     let mut error_rate = 0;
 
@@ -24,7 +24,7 @@ impl Day for Day16 {
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let mut taf = parse_tickets_and_fields(input);
+    let mut taf = TicketsAndFields::parse(input);
     taf.eliminate_invalid();
 
     let mut field_columns = Vec::new();
@@ -102,6 +102,30 @@ impl TicketsAndFields {
 
     columns
   }
+
+  fn parse(input: &Vec<String>) -> TicketsAndFields {
+    let mut taf = TicketsAndFields {
+      fields: Vec::new(),
+      my_ticket: Vec::new(),
+      nearby_tickets: Vec::new(),
+    };
+
+    let mut part = 0;
+    for line in input {
+      if line.is_empty() {
+        part += 1;
+      }
+
+      match part {
+        0 => taf.fields.push(Field::parse(line)),
+        1 => if line.contains(",") {taf.my_ticket = parse_ticket(line);}, 
+        2 => if line.contains(",") {taf.nearby_tickets.push(parse_ticket(line));}, 
+        _ => println!("Not sure what we are processing right now.")
+      }
+    }
+
+    taf
+  }
 }
 
 #[derive(Debug, PartialEq)]
@@ -117,50 +141,26 @@ impl Field {
   fn fits(&self, num: usize) -> bool {
     (num >= self.first_lower && num <= self.first_upper) || (num >= self.second_lower && num <= self.second_upper)
   }
-}
 
-fn parse_tickets_and_fields(input: &Vec<String>) -> TicketsAndFields {
-  let mut taf = TicketsAndFields {
-    fields: Vec::new(),
-    my_ticket: Vec::new(),
-    nearby_tickets: Vec::new(),
-  };
+  fn parse(line: &str) -> Field {
+    let mut parts = line.split(": ");
+    let name = String::from(parts.next().unwrap());
+    let mut words = parts.next().unwrap().split(" ");
+    let mut first = words.next().unwrap().split("-");
+    let first_lower = first.next().unwrap().parse::<usize>().unwrap();
+    let first_upper = first.next().unwrap().parse::<usize>().unwrap();
+    words.next();
+    let mut second = words.next().unwrap().split("-");
+    let second_lower = second.next().unwrap().parse::<usize>().unwrap();
+    let second_upper = second.next().unwrap().parse::<usize>().unwrap();
 
-  let mut part = 0;
-  for line in input {
-    if line.is_empty() {
-      part += 1;
+    Field {
+      name: name,
+      first_lower: first_lower,
+      first_upper: first_upper,
+      second_lower: second_lower,
+      second_upper: second_upper,
     }
-
-    match part {
-      0 => taf.fields.push(parse_field(line)),
-      1 => if line.contains(",") {taf.my_ticket = parse_ticket(line);}, 
-      2 => if line.contains(",") {taf.nearby_tickets.push(parse_ticket(line));}, 
-      _ => println!("Not sure what we are processing right now.")
-    }
-  }
-
-  taf
-}
-
-fn parse_field(line: &str) -> Field {
-  let mut parts = line.split(": ");
-  let name = String::from(parts.next().unwrap());
-  let mut words = parts.next().unwrap().split(" ");
-  let mut first = words.next().unwrap().split("-");
-  let first_lower = first.next().unwrap().parse::<usize>().unwrap();
-  let first_upper = first.next().unwrap().parse::<usize>().unwrap();
-  words.next();
-  let mut second = words.next().unwrap().split("-");
-  let second_lower = second.next().unwrap().parse::<usize>().unwrap();
-  let second_upper = second.next().unwrap().parse::<usize>().unwrap();
-
-  Field {
-    name: name,
-    first_lower: first_lower,
-    first_upper: first_upper,
-    second_lower: second_lower,
-    second_upper: second_upper,
   }
 }
 
@@ -234,7 +234,7 @@ mod tests {
 
   #[test]
   fn test_parse_tickets_and_fields() {
-    let taf = parse_tickets_and_fields(&sample_input_1());
+    let taf = TicketsAndFields::parse(&sample_input_1());
     assert_eq!(taf.fields.len(), 3);
     assert_eq!(taf.fields[0], Field{name: String::from("departure location"), first_lower: 1, first_upper: 3, second_lower: 5, second_upper: 7});
     assert_eq!(taf.fields[1], Field{name: String::from("row"), first_lower: 6, first_upper: 11, second_lower: 33, second_upper: 44});
@@ -249,7 +249,7 @@ mod tests {
 
   #[test]
   fn test_fits() {
-    let taf = parse_tickets_and_fields(&sample_input_1());
+    let taf = TicketsAndFields::parse(&sample_input_1());
     assert_eq!(taf.fits(7), true);
     assert_eq!(taf.fits(47), true);
     assert_eq!(taf.fits(4), false);
@@ -264,7 +264,7 @@ mod tests {
 
   #[test]
   fn test_eliminate_invalid() {
-    let mut taf = parse_tickets_and_fields(&sample_input_1());
+    let mut taf = TicketsAndFields::parse(&sample_input_1());
     taf.eliminate_invalid();
     assert_eq!(taf.nearby_tickets.len(), 1);
     assert_eq!(taf.nearby_tickets[0], vec![7, 3, 47]);
@@ -288,7 +288,7 @@ mod tests {
 
   #[test]
   fn test_field_column() {
-    let taf = parse_tickets_and_fields(&sample_input_2());
+    let taf = TicketsAndFields::parse(&sample_input_2());
     assert_eq!(taf.field_column(&taf.fields[0]), vec![1, 2]);
     assert_eq!(taf.field_column(&taf.fields[1]), vec![0, 1, 2]);
     assert_eq!(taf.field_column(&taf.fields[2]), vec![2]);

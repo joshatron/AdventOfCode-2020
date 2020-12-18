@@ -8,7 +8,7 @@ impl Day for Day12 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let mut ship = create_ship();
+    let mut ship = Ship::new();
 
     for instruction in input.iter().map(|l| parse_instruction(l)) {
       ship.run_instruction(&instruction);
@@ -18,7 +18,7 @@ impl Day for Day12 {
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let mut ship = create_ship_with_waypoint();
+    let mut ship = ShipWithWaypoint::new();
 
     for instruction in input.iter().map(|l| parse_instruction(l)) {
       ship.run_instruction(&instruction);
@@ -83,13 +83,13 @@ impl Ship {
       Direction::West => self.facing = Direction::North,
     }
   }
-}
 
-fn create_ship() -> Ship {
-  Ship{
-    x: 0,
-    y: 0,
-    facing: Direction::East
+  fn new() -> Ship {
+    Ship{
+      x: 0,
+      y: 0,
+      facing: Direction::East
+    }
   }
 }
 
@@ -153,14 +153,14 @@ impl ShipWithWaypoint {
     self.waypoint_x = self.waypoint_y;
     self.waypoint_y = temp_x * -1;
   }
-}
 
-fn create_ship_with_waypoint() -> ShipWithWaypoint {
-  ShipWithWaypoint {
-    x: 0,
-    y: 0,
-    waypoint_x: 10,
-    waypoint_y: 1,
+  fn new() -> ShipWithWaypoint {
+    ShipWithWaypoint {
+      x: 0,
+      y: 0,
+      waypoint_x: 10,
+      waypoint_y: 1,
+    }
   }
 }
 
@@ -211,7 +211,7 @@ mod tests {
 
   #[test]
   fn test_create_ship() {
-    let ship = create_ship();
+    let ship = Ship::new();
     assert_eq!(ship.x, 0);
     assert_eq!(ship.y, 0);
     assert_eq!(ship.facing, Direction::East);
@@ -219,7 +219,7 @@ mod tests {
 
   #[test]
   fn test_run_direction() {
-    let mut ship = create_ship();
+    let mut ship = Ship::new();
     ship.run_instruction(&Instruction::Move(Direction::North, 3));
     ship.run_instruction(&Instruction::Move(Direction::South, 4));
     ship.run_instruction(&Instruction::Move(Direction::East, 5));
@@ -250,7 +250,7 @@ mod tests {
 
   #[test]
   fn test_ship_with_waypoint_run_instruction() {
-    let mut ship = create_ship_with_waypoint();
+    let mut ship = ShipWithWaypoint::new();
 
     ship.run_instruction(&Instruction::Move(Direction::North, 3));
     ship.run_instruction(&Instruction::Move(Direction::South, 4));

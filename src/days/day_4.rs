@@ -8,7 +8,7 @@ impl Day for Day4 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let passports = create_passports(input);
+    let passports = parse_passports(input);
 
     let mut valid = 0;
 
@@ -22,7 +22,7 @@ impl Day for Day4 {
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let passports = create_passports(input);
+    let passports = parse_passports(input);
 
     let mut valid = 0;
 
@@ -123,13 +123,39 @@ struct Passport {
   country_id: String
 }
 
-fn create_passports(input: &Vec<String>) -> Vec<Passport> {
+impl Passport {
+  fn parse(line: &str) -> Passport {
+    let mut passport = Passport::new();
+
+    for field in separate_passport_fields(line) {
+      add_field_to_passport(&mut passport, field);
+    }
+
+    passport
+  }
+
+  fn new() -> Passport {
+    Passport{
+      birth_year: String::from(""),
+      issue_year: String::from(""),
+      expiration_year: String::from(""),
+      height: String::from(""),
+      hair_color: String::from(""),
+      eye_color: String::from(""),
+      passport_id: String::from(""),
+      country_id: String::from(""),
+    }
+  }
+}
+
+
+fn parse_passports(input: &Vec<String>) -> Vec<Passport> {
   let mut passports = vec![];
 
   let mut current_passport = String::from("");
   for line in input {
     if line == "" {
-      passports.push(get_passport(&current_passport));
+      passports.push(Passport::parse(&current_passport));
       current_passport = String::from("");
     } else {
       current_passport.push_str(line);
@@ -138,33 +164,10 @@ fn create_passports(input: &Vec<String>) -> Vec<Passport> {
   }
 
   if current_passport != "" {
-    passports.push(get_passport(&current_passport));
+    passports.push(Passport::parse(&current_passport));
   }
 
   passports
-}
-
-fn get_passport(line: &str) -> Passport {
-  let mut passport = empty_passport();
-
-  for field in separate_passport_fields(line) {
-    add_field_to_passport(&mut passport, field);
-  }
-
-  passport
-}
-
-fn empty_passport() -> Passport {
-  Passport{
-    birth_year: String::from(""),
-    issue_year: String::from(""),
-    expiration_year: String::from(""),
-    height: String::from(""),
-    hair_color: String::from(""),
-    eye_color: String::from(""),
-    passport_id: String::from(""),
-    country_id: String::from(""),
-  }
 }
 
 fn separate_passport_fields(fields: &str) -> Vec<&str> {
@@ -213,7 +216,7 @@ mod tests {
 
   #[test]
   fn test_create_passports() {
-    let passports = create_passports(&sample_input_1());
+    let passports = parse_passports(&sample_input_1());
     
     assert_eq!(passports[0].birth_year, "1937");
     assert_eq!(passports[0].issue_year, "2017");

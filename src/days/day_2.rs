@@ -11,7 +11,7 @@ impl Day for Day2 {
     let mut valid = 0;
 
     for l in input {
-      let line = create_line(l);
+      let line = Line::parse(l);
       let occurences = get_number_of_occurences(&line);
       if occurences >= line.lower && occurences <= line.upper {
         valid = valid + 1;
@@ -25,7 +25,7 @@ impl Day for Day2 {
     let mut valid = 0;
 
     for l in input {
-      let line = create_line(l);
+      let line = Line::parse(l);
         if is_matching_only_once(&line) {
             valid = valid + 1;
         }
@@ -42,12 +42,14 @@ struct Line {
   password: String,
 }
 
-fn create_line(input: &String) -> Line {
-  Line {
-    lower: get_lower_range(input),
-    upper: get_upper_range(input),
-    c: get_char_to_check(input),
-    password: get_password(input),
+impl Line {
+  fn parse(input: &String) -> Line {
+    Line {
+      lower: get_lower_range(input),
+      upper: get_upper_range(input),
+      c: get_char_to_check(input),
+      password: get_password(input),
+    }
   }
 }
 
@@ -146,17 +148,17 @@ mod tests {
 
   #[test]
   fn test_get_number_of_occurences() {
-    let line = create_line(&String::from("1-2 c: cccbbbaaac"));
+    let line = Line::parse(&String::from("1-2 c: cccbbbaaac"));
       assert_eq!(get_number_of_occurences(&line), 4);
   }
 
   #[test]
   fn test_is_matching_only_once() {
-    let line1 = create_line(&String::from("1-3 a: abcde"));
+    let line1 = Line::parse(&String::from("1-3 a: abcde"));
     assert_eq!(is_matching_only_once(&line1), true);
-    let line2 = create_line(&String::from("1-3 b: cdefg"));
+    let line2 = Line::parse(&String::from("1-3 b: cdefg"));
     assert_eq!(is_matching_only_once(&line2), false);
-    let line3 = create_line(&String::from("2-9 c: ccccccccc"));
+    let line3 = Line::parse(&String::from("2-9 c: ccccccccc"));
     assert_eq!(is_matching_only_once(&line3), false);
   }
 

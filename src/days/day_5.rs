@@ -10,7 +10,7 @@ impl Day for Day5 {
   fn puzzle_1(&self, input: &Vec<String>) -> String {
     let mut highest = 0;
     for line in input {
-      let seat = get_seat(line);
+      let seat = Seat::parse(line);
       if seat.get_seat_id() > highest {
         highest = seat.get_seat_id();
       }
@@ -21,7 +21,7 @@ impl Day for Day5 {
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let mut seat_ids: Vec<usize> = input.iter()
-      .map(|l| get_seat(l))
+      .map(|l| Seat::parse(l))
       .map(|s| s.get_seat_id())
       .collect();
     seat_ids.sort();
@@ -47,12 +47,12 @@ impl Seat {
   fn get_seat_id(&self) -> usize {
     self.row * 8 + self.column
   }
-}
 
-fn get_seat(instructions: &str) -> Seat {
-  Seat {
-    row: get_row(&instructions[..7]),
-    column: get_column(&instructions[7..]),
+  fn parse(instructions: &str) -> Seat {
+    Seat {
+      row: get_row(&instructions[..7]),
+      column: get_column(&instructions[7..]),
+    }
   }
 }
 
@@ -88,10 +88,10 @@ mod tests {
 
   #[test]
   fn test_get_seat() {
-    assert_eq!(get_seat("FBFBBFFRLR"), Seat{row: 44, column: 5});
-    assert_eq!(get_seat("BFFFBBFRRR"), Seat{row: 70, column: 7});
-    assert_eq!(get_seat("FFFBBBFRRR"), Seat{row: 14, column: 7});
-    assert_eq!(get_seat("BBFFBBFRLL"), Seat{row: 102, column: 4});
+    assert_eq!(Seat::parse("FBFBBFFRLR"), Seat{row: 44, column: 5});
+    assert_eq!(Seat::parse("BFFFBBFRRR"), Seat{row: 70, column: 7});
+    assert_eq!(Seat::parse("FFFBBBFRRR"), Seat{row: 14, column: 7});
+    assert_eq!(Seat::parse("BBFFBBFRLL"), Seat{row: 102, column: 4});
   }
 
   #[test]
