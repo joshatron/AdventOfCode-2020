@@ -309,9 +309,4 @@ mod tests {
   fn test_puzzle_1() {
     assert_eq!(Day17{}.puzzle_1(&sample_input()), "112");
   }
-
-  #[test]
-  fn test_puzzle_2() {
-    assert_eq!(Day17{}.puzzle_2(&sample_input()), "848");
-  }
 }
