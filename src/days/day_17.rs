@@ -3,6 +3,12 @@ use std::collections::HashSet;
 
 pub struct Day17 {}
 
+impl Day17 {
+  pub fn new() -> Day17 {
+    Day17{}
+  }
+}
+
 impl Day for Day17 {
   fn day_num(&self) -> usize {
     17

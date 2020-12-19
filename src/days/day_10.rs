@@ -3,6 +3,12 @@ use crate::days;
 
 pub struct Day10 {}
 
+impl Day10 {
+  pub fn new() -> Day10 {
+    Day10{}
+  }
+}
+
 impl Day for Day10 {
   fn day_num(&self) -> usize {
     10

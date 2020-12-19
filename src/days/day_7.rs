@@ -5,6 +5,12 @@ use std::collections::HashMap;
 
 pub struct Day7 {}
 
+impl Day7 {
+  pub fn new() -> Day7 {
+    Day7{}
+  }
+}
+
 impl Day for Day7 {
   fn day_num(&self) -> usize {
     7
