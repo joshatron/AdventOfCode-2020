@@ -1,12 +1,13 @@
 use std::time::Instant;
 
-pub mod input;
 pub mod days;
+pub mod input;
 
 pub fn run() {
   println!("Advent of Code 2020 Results");
   println!("===========================");
 
+  let all_puzzle_start = Instant::now();
   for day in days::get_days() {
     let day_input = input::get_day_input(day.day_num());
     println!("\nDay {}", day.day_num());
@@ -19,4 +20,6 @@ pub fn run() {
     let puzzle_2_time = puzzle_2_start.elapsed().as_micros() as f64 / 1000.;
     println!("  Puzzle 2 ({}ms): {}", puzzle_2_time, puzzle_2);
   }
+  let all_puzzle_time = all_puzzle_start.elapsed().as_millis() as f64 / 1000.;
+  println!("All Puzzle Time: {}s", all_puzzle_time);
 }
