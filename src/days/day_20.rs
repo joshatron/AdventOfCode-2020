@@ -21,7 +21,11 @@ impl Day for Day20 {
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    String::from("")
+    let image = Image::parse(input);
+    let raw_image = image.get_raw_image();
+    let monsters = count_monsters(&raw_image);
+
+    (count_choppy(&raw_image) - monsters * 15).to_string()
   }
 }
 
@@ -79,7 +83,6 @@ impl Image {
     let reverse_border: String = border.chars().rev().collect();
 
     for fragment in &self.fragments {
-
       if fragment.id != current_fragment &&
          (border == fragment.left_border || border == fragment.right_border ||
          border == fragment.top_border || border == fragment.bottom_border ||
@@ -121,6 +124,7 @@ impl Image {
     }
     fragments.push(current_row);
 
+
     for i in 1..side_length {
       current_row = Vec::new();
       for j in 0..side_length {
@@ -131,7 +135,7 @@ impl Image {
           other = other.rotate();
         }
         if &other.top_border == &to_match.bottom_border {
-          other = other.flip().rotate().rotate();
+          other = other.flip();
         }
         current_row.push(other);
       }
@@ -157,7 +161,7 @@ impl Image {
   }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct ImageFragment {
   id: usize,
   left_border: String,
@@ -200,61 +204,89 @@ impl ImageFragment {
   }
 
   fn rotate(&self) -> ImageFragment {
-    let mut new_image = Vec::new();
-
-    for i in 0..8 {
-      let mut new_line = Vec::new();
-      for j in (0..8).rev() {
-        new_line.push(self.image[j][i]);
-      }
-      new_image.push(new_line);
-    }
-
     ImageFragment {
       id: self.id,
       left_border: self.bottom_border.clone(),
       right_border: self.top_border.clone(),
       top_border: self.left_border.clone(),
       bottom_border: self.right_border.clone(),
-      image: new_image,
+      image: rotate_image(&self.image),
     }
   }
 
   fn flip(&self) -> ImageFragment {
-    let mut new_image = Vec::new();
-
-    for i in 0..8 {
-      let mut new_line = Vec::new();
-      for j in (0..8).rev() {
-        new_line.push(self.image[i][j]);
-      }
-      new_image.push(new_line);
-    }
-
     ImageFragment {
       id: self.id,
       left_border: self.right_border.chars().rev().collect(),
       right_border: self.left_border.chars().rev().collect(),
-      top_border: self.bottom_border.chars().rev().collect(),
-      bottom_border: self.top_border.chars().rev().collect(),
-      image: new_image,
+      top_border: self.top_border.chars().rev().collect(),
+      bottom_border: self.bottom_border.chars().rev().collect(),
+      image: flip_image(&self.image),
     }
   }
 }
 
+fn rotate_image(image: &Vec<Vec<bool>>) -> Vec<Vec<bool>> {
+  let mut new_image = Vec::new();
+
+  for i in 0..image[0].len() {
+    let mut new_line = Vec::new();
+    for j in (0..image.len()).rev() {
+      new_line.push(image[j][i]);
+    }
+    new_image.push(new_line);
+  }
+
+  new_image
+}
+
+fn flip_image(image: &Vec<Vec<bool>>) -> Vec<Vec<bool>> {
+  let mut new_image = Vec::new();
+
+  for i in 0..image.len() {
+    let mut new_line = Vec::new();
+    for j in (0..image[0].len()).rev() {
+      new_line.push(image[i][j]);
+    }
+    new_image.push(new_line);
+  }
+
+  new_image
+}
+
 fn count_monsters(image: &Vec<Vec<bool>>) -> usize {
-  let pattern = vec![
+  let mut pattern = vec![
     vec![false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false],
     vec![true, false, false, false, false, true, true, false, false, false, false, true, true, false, false, false, false, true, true, true],
     vec![false, true, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true, false, false, false],
   ];
+
+  for _ in 0..4 {
+    let matching = get_matching(image, &pattern);
+    if matching > 0 {
+      return matching;
+    }
+    pattern = rotate_image(&pattern);
+  }
+  pattern = flip_image(&pattern);
+  for _ in 0..4 {
+    let matching = get_matching(image, &pattern);
+    if matching > 0 {
+      return matching;
+    }
+    pattern = rotate_image(&pattern);
+  }
+
+  0
 }
 
 fn get_matching(image: &Vec<Vec<bool>>, pattern: &Vec<Vec<bool>>) -> usize {
   let mut found = 0;
   for x in 0..(image[0].len() - pattern[0].len()) {
     for y in 0..(image.len() - pattern.len()) {
-      
+      if does_match(image, pattern, x, y) {
+        found += 1;
+      }
     }
   }
 
@@ -271,6 +303,19 @@ fn does_match(image: &Vec<Vec<bool>>, pattern: &Vec<Vec<bool>>, start_x: usize, 
   }
 
   true
+}
+
+fn count_choppy(image: &Vec<Vec<bool>>) -> usize {
+  let mut total = 0;
+  for x in 0..image[0].len() {
+    for y in 0..image.len() {
+      if image[y][x] {
+        total += 1;
+      }
+    }
+  }
+
+  total
 }
 
 #[cfg(test)]
@@ -325,7 +370,7 @@ mod tests {
 
   #[test]
   fn test_puzzle_2() {
-    assert_eq!(Day20::new().puzzle_2(&sample_input()), "");
+    assert_eq!(Day20::new().puzzle_2(&sample_input()), "273");
   }
 
   fn sample_input() -> Vec<String> {
