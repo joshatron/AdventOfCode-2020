@@ -12,16 +12,101 @@ impl Day19 {
 
 impl Day for Day19 {
   fn day_num(&self) -> usize {
-    1
+    19
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    String::from("")
+    let mut rules = Rules::parse(input);
+    rules.reduce();
+
+    let mut matching = 0;
+    let strs = rules.get_set(0);
+    for line in second_part(input) {
+      if strs.contains(&line) {
+        matching += 1;
+      }
+    }
+
+    matching.to_string()
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    String::from("")
+    let mut rules = Rules::parse(input);
+    rules.reduce();
+
+    let fourty_two = rules.get_set(42);
+    let thirty_one = rules.get_set(31);
+
+    let mut matching = 0;
+    for line in &mut second_part(input) {
+      if matches_loop(line, fourty_two, thirty_one) {
+        matching += 1;
+      }
+    }
+
+    matching.to_string()
   }
+}
+
+fn matches_loop(line: &mut String, first: &HashSet<String>, second: &HashSet<String>) -> bool {
+
+  let chunks = line.chars()
+    .collect::<Vec<char>>()
+    .chunks(8)
+    .map(|c| c.iter().collect::<String>())
+    .collect::<Vec<String>>();
+
+  let mut first_part = true;
+  let mut first_parts = 0;
+  let mut second_parts = 0;
+
+  for chunk in chunks {
+    if first_part {
+      if first.contains(&chunk) {
+        first_parts += 1;
+      } else {
+        first_part = false;
+        if second.contains(&chunk) {
+          second_parts += 1;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      if second.contains(&chunk) {
+        second_parts += 1;
+      } else {
+        return false;
+      }
+    }
+  }
+  println!("{} {} {}", line, first_parts, second_parts);
+
+  first_parts > second_parts && second_parts != 0
+}
+
+fn try_remove_from_end(line: &String, to_match: &HashSet<String>) -> String {
+  for i in (0..line.len()).rev() {
+    if to_match.contains(&line[i..]) {
+      return line[..i].to_string();
+    }
+  }
+
+  return line.clone();
+}
+
+fn second_part(input: &Vec<String>) -> Vec<String> {
+  let mut to_return = Vec::new();
+  let mut started = false;
+  for line in input {
+    if started {
+      to_return.push(line.clone());
+    } else if line.is_empty() {
+      started = true;
+    }
+  }
+
+  to_return
 }
 
 struct Rules {
@@ -49,42 +134,160 @@ impl Rules {
     &self.rules.get(&index).unwrap()
   }
 
+  fn get_set(&self, index: usize) -> &HashSet<String> {
+    if let RuleType::Set(strs) = self.rules.get(&index).unwrap() {
+      &strs
+    } else {
+      panic!("Not a set!");
+    }
+  }
+
   fn reduce(&mut self) {
     let mut done = false;
     while !done {
       done = true;
+
+      let mut sets = HashMap::new();
+
       for (rule_num, rule) in &self.rules {
         match rule {
-          RuleType::Order(rules) => println!("Order"),
-          RuleType::Other(rules) => println!("Other"),
-          RuleType::Or(first, second) => println!("Or"),
-          RuleType::Set(rules) => println!("Or"),
-          RuleType::None => println!("Nothing to do"),
+          RuleType::Set(strs) => {
+            sets.insert(rule_num.clone(), strs.clone());
+          },
+          _ => (),
         }
+      }
+
+      for (set_num, set) in sets {
+        let mut new_rules = HashMap::new();
+        for (rule_num, rule) in &self.rules {
+          new_rules.insert(*rule_num, sub_set(rule.clone(), &set, set_num));
+          if new_rules.get(rule_num) != self.rules.get(rule_num) {
+            done = false;
+          }
+        }
+
+        self.rules = new_rules;
+      }
+
+      let mut new_rules = HashMap::new();
+      for (rule_num, rule) in &self.rules {
+        new_rules.insert(*rule_num, simplfy(rule.clone()));
+        if new_rules.get(rule_num) != self.rules.get(rule_num) {
+          done = false;
+        }
+      }
+      self.rules = new_rules;
+
+    }
+  }
+}
+
+fn simplfy(rule: RuleType) -> RuleType {
+  match rule {
+    RuleType::Order(rules) => {
+      let mut all_sets = true;
+      for r in &rules {
+        if let RuleType::Set(strs) = r {
+
+        } else {
+          all_sets = false;
+        }
+      }
+
+      if all_sets {
+        squash_order(&rules)
+      } else {
+        RuleType::Order(rules)
+      }
+    },
+    RuleType::Other(num) => rule,
+    RuleType::Or(first, second) => {
+      let both = vec![*first.clone(), *second.clone()];
+
+      let mut all_sets = true;
+      for r in &both {
+        if let RuleType::Set(strs) = r {
+
+        } else {
+          all_sets = false;
+        }
+      }
+
+      if all_sets {
+        squash_or(&both)
+      } else {
+        RuleType::Or(Box::new(simplfy(*first)), Box::new(simplfy(*second)))
+      }
+
+    },
+    RuleType::Set(strs) => RuleType::Set(strs),
+    RuleType::None => rule,
+  }
+}
+
+fn squash_or(sets: &Vec<RuleType>) -> RuleType {
+  let mut new_set = HashSet::new();
+
+  for set in sets {
+    if let RuleType::Set(strs) = set {
+      for part in strs {
+        new_set.insert(part.clone());
       }
     }
   }
 
-  fn replace_set(&mut self, set: RuleType, number: usize) {
-    let mut new_rules = HashMap::new();
+  RuleType::Set(new_set)
+}
 
-    for (rule_num, rule) in &self.rules {
-      match rule {
-        RuleType::Order(rules) => println!("Order"),
-        RuleType::Other(rules) => {
-          if rules == &number {
-            new_rules.insert(*rule_num, set.clone());
-          } else {
-            new_rules.insert(*rule_num, *rule);
+fn squash_order(sets: &Vec<RuleType>) -> RuleType {
+  let mut new_set = HashSet::new();
+
+  for set in sets {
+    if let RuleType::Set(strs) = set {
+      if new_set.is_empty() {
+        new_set = strs.clone();
+      } else {
+        let mut temp_set = HashSet::new();
+        for s1 in new_set {
+          for s2 in strs {
+            let mut both = s1.clone();
+            both.push_str(s2);
+            temp_set.insert(both);
           }
-        },
-        RuleType::Or(first, second) => println!("Or"),
-        RuleType::Set(rules) => println!("Or"),
-        RuleType::None => println!("Nothing to do"),
+        }
+
+        new_set = temp_set;
       }
     }
+  }
 
-    self.rules = new_rules;
+
+  RuleType::Set(new_set)
+}
+
+fn sub_set(rule: RuleType, set: &HashSet<String>, set_number: usize) -> RuleType {
+  match rule {
+    RuleType::Order(rules) => {
+      let mut new_rules = Vec::new();
+      for rule in rules {
+        new_rules.push(sub_set(rule, set, set_number))
+      }
+
+      RuleType::Order(new_rules)
+    },
+    RuleType::Other(num) => {
+      if num == set_number {
+        RuleType::Set(set.clone())
+      } else {
+        RuleType::Other(num)
+      }
+    },
+    RuleType::Or(first, second) => {
+      RuleType::Or(Box::new(sub_set(*first, set, set_number)), Box::new(sub_set(*second, set, set_number)))
+    },
+    RuleType::Set(strs) => RuleType::Set(strs),
+    RuleType::None => RuleType::None,
   }
 }
 
@@ -187,11 +390,25 @@ mod tests {
     third_set.insert(String::from("ab"));
     third_set.insert(String::from("ba"));
     assert_eq!(rules.get_rule(3), &RuleType::Set(third_set));
+    let mut fourth_set = HashSet::new();
+    fourth_set.insert(String::from("aa"));
+    fourth_set.insert(String::from("bb"));
+    assert_eq!(rules.get_rule(2), &RuleType::Set(fourth_set));
+    let mut fifth_set = HashSet::new();
+    fifth_set.insert(String::from("aaab"));
+    fifth_set.insert(String::from("aaba"));
+    fifth_set.insert(String::from("bbab"));
+    fifth_set.insert(String::from("bbba"));
+    fifth_set.insert(String::from("abaa"));
+    fifth_set.insert(String::from("abbb"));
+    fifth_set.insert(String::from("baaa"));
+    fifth_set.insert(String::from("babb"));
+    assert_eq!(rules.get_rule(1), &RuleType::Set(fifth_set));
   }
 
   #[test]
   fn test_puzzle_1() {
-    assert_eq!(Day19::new().puzzle_1(&sample_input()), "");
+    assert_eq!(Day19::new().puzzle_1(&sample_input()), "2");
   }
 
   #[test]
