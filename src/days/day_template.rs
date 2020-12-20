@@ -1,16 +1,16 @@
 use crate::days::Day;
 
-pub struct Day1 {}
+pub struct Day20 {}
 
-impl Day1 {
-  pub fn new() -> Day1 {
-    Day1{}
+impl Day20 {
+  pub fn new() -> Day20 {
+    Day20{}
   }
 }
 
-impl Day for Day1 {
+impl Day for Day20 {
   fn day_num(&self) -> usize {
-    1
+    20
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
@@ -34,11 +34,11 @@ mod tests {
 
   #[test]
   fn test_puzzle_1() {
-    assert_eq!(Day1::new().puzzle_1(&sample_input()), "");
+    assert_eq!(Day20::new().puzzle_1(&sample_input()), "");
   }
 
   #[test]
   fn test_puzzle_2() {
-    assert_eq!(Day1::new().puzzle_2(&sample_input()), "");
+    assert_eq!(Day20::new().puzzle_2(&sample_input()), "");
   }
 }
