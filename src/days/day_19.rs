@@ -80,7 +80,6 @@ fn matches_loop(line: &mut String, first: &HashSet<String>, second: &HashSet<Str
       }
     }
   }
-  println!("{} {} {}", line, first_parts, second_parts);
 
   first_parts > second_parts && second_parts != 0
 }
@@ -145,7 +144,6 @@ impl Rules {
   fn reduce(&mut self) {
     let mut done = false;
     while !done {
-      done = true;
 
       let mut sets = HashMap::new();
 
@@ -162,9 +160,6 @@ impl Rules {
         let mut new_rules = HashMap::new();
         for (rule_num, rule) in &self.rules {
           new_rules.insert(*rule_num, sub_set(rule.clone(), &set, set_num));
-          if new_rules.get(rule_num) != self.rules.get(rule_num) {
-            done = false;
-          }
         }
 
         self.rules = new_rules;
@@ -173,12 +168,12 @@ impl Rules {
       let mut new_rules = HashMap::new();
       for (rule_num, rule) in &self.rules {
         new_rules.insert(*rule_num, simplfy(rule.clone()));
-        if new_rules.get(rule_num) != self.rules.get(rule_num) {
-          done = false;
-        }
       }
       self.rules = new_rules;
 
+      if let RuleType::Set(_) = self.get_rule(0) {
+        done = true;
+      }
     }
   }
 }
