@@ -49,7 +49,6 @@ impl Day for Day19 {
 }
 
 fn matches_loop(line: &mut String, first: &HashSet<String>, second: &HashSet<String>) -> bool {
-
   let chunks = line.chars()
     .collect::<Vec<char>>()
     .chunks(8)
@@ -82,16 +81,6 @@ fn matches_loop(line: &mut String, first: &HashSet<String>, second: &HashSet<Str
   }
 
   first_parts > second_parts && second_parts != 0
-}
-
-fn try_remove_from_end(line: &String, to_match: &HashSet<String>) -> String {
-  for i in (0..line.len()).rev() {
-    if to_match.contains(&line[i..]) {
-      return line[..i].to_string();
-    }
-  }
-
-  return line.clone();
 }
 
 fn second_part(input: &Vec<String>) -> Vec<String> {
@@ -144,7 +133,6 @@ impl Rules {
   fn reduce(&mut self) {
     let mut done = false;
     while !done {
-
       let mut sets = HashMap::new();
 
       for (rule_num, rule) in &self.rules {
@@ -183,8 +171,7 @@ fn simplfy(rule: RuleType) -> RuleType {
     RuleType::Order(rules) => {
       let mut all_sets = true;
       for r in &rules {
-        if let RuleType::Set(strs) = r {
-
+        if let RuleType::Set(_) = r {
         } else {
           all_sets = false;
         }
@@ -196,13 +183,13 @@ fn simplfy(rule: RuleType) -> RuleType {
         RuleType::Order(rules)
       }
     },
-    RuleType::Other(num) => rule,
+    RuleType::Other(_) => rule,
     RuleType::Or(first, second) => {
       let both = vec![*first.clone(), *second.clone()];
 
       let mut all_sets = true;
       for r in &both {
-        if let RuleType::Set(strs) = r {
+        if let RuleType::Set(_) = r {
 
         } else {
           all_sets = false;
@@ -217,7 +204,6 @@ fn simplfy(rule: RuleType) -> RuleType {
 
     },
     RuleType::Set(strs) => RuleType::Set(strs),
-    RuleType::None => rule,
   }
 }
 
@@ -282,7 +268,6 @@ fn sub_set(rule: RuleType, set: &HashSet<String>, set_number: usize) -> RuleType
       RuleType::Or(Box::new(sub_set(*first, set, set_number)), Box::new(sub_set(*second, set, set_number)))
     },
     RuleType::Set(strs) => RuleType::Set(strs),
-    RuleType::None => RuleType::None,
   }
 }
 
@@ -292,7 +277,6 @@ enum RuleType {
   Other(usize),
   Or(Box<RuleType>, Box<RuleType>),
   Set(HashSet<String>),
-  None,
 }
 
 fn parse_rule_num(line: &str) -> usize {
