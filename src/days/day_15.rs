@@ -26,11 +26,7 @@ impl Day for Day15 {
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let mut initial = Sequence::parse(&input[0]);
 
-    //while initial.turn < 30000000 {
-    //initial.play_one_round();
-    //}
-    let rounds = 30000000 - initial.turn;
-    for _ in 0..rounds {
+    while initial.turn < 30000000 {
       initial.play_one_round();
     }
 
