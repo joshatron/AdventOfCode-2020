@@ -1,12 +1,13 @@
 use crate::days::Day;
-use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::time::Instant;
 
 pub struct Day19 {}
 
 impl Day19 {
   pub fn new() -> Day19 {
-    Day19{}
+    Day19 {}
   }
 }
 
@@ -20,9 +21,10 @@ impl Day for Day19 {
     rules.reduce();
 
     let mut matching = 0;
-    let strs = rules.get_set(0);
+    let first_strs = rules.get_set(8);
+    let last_strs = rules.get_set(11);
     for line in second_part(input) {
-      if strs.contains(&line) {
+      if first_strs.contains(&line[0..8]) && last_strs.contains(&line[8..]) {
         matching += 1;
       }
     }
@@ -49,7 +51,8 @@ impl Day for Day19 {
 }
 
 fn matches_loop(line: &mut String, first: &HashSet<String>, second: &HashSet<String>) -> bool {
-  let chunks = line.chars()
+  let chunks = line
+    .chars()
     .collect::<Vec<char>>()
     .chunks(8)
     .map(|c| c.iter().collect::<String>())
@@ -131,6 +134,7 @@ impl Rules {
   }
 
   fn reduce(&mut self) {
+    let mut applied = HashSet::new();
     let mut done = false;
     while !done {
       let mut sets = HashMap::new();
@@ -138,8 +142,11 @@ impl Rules {
       for (rule_num, rule) in &self.rules {
         match rule {
           RuleType::Set(strs) => {
-            sets.insert(rule_num.clone(), strs.clone());
-          },
+            if !applied.contains(rule_num) {
+              applied.insert(rule_num.clone());
+              sets.insert(rule_num.clone(), strs.clone());
+            }
+          }
           _ => (),
         }
       }
@@ -159,8 +166,10 @@ impl Rules {
       }
       self.rules = new_rules;
 
-      if let RuleType::Set(_) = self.get_rule(0) {
-        done = true;
+      if let RuleType::Set(_) = self.get_rule(8) {
+        if let RuleType::Set(_) = self.get_rule(11) {
+          done = true;
+        }
       }
     }
   }
@@ -182,7 +191,7 @@ fn simplfy(rule: RuleType) -> RuleType {
       } else {
         RuleType::Order(rules)
       }
-    },
+    }
     RuleType::Other(_) => rule,
     RuleType::Or(first, second) => {
       let both = vec![*first.clone(), *second.clone()];
@@ -190,7 +199,6 @@ fn simplfy(rule: RuleType) -> RuleType {
       let mut all_sets = true;
       for r in &both {
         if let RuleType::Set(_) = r {
-
         } else {
           all_sets = false;
         }
@@ -201,8 +209,7 @@ fn simplfy(rule: RuleType) -> RuleType {
       } else {
         RuleType::Or(Box::new(simplfy(*first)), Box::new(simplfy(*second)))
       }
-
-    },
+    }
     RuleType::Set(strs) => RuleType::Set(strs),
   }
 }
@@ -243,7 +250,6 @@ fn squash_order(sets: &Vec<RuleType>) -> RuleType {
     }
   }
 
-
   RuleType::Set(new_set)
 }
 
@@ -256,17 +262,18 @@ fn sub_set(rule: RuleType, set: &HashSet<String>, set_number: usize) -> RuleType
       }
 
       RuleType::Order(new_rules)
-    },
+    }
     RuleType::Other(num) => {
       if num == set_number {
         RuleType::Set(set.clone())
       } else {
         RuleType::Other(num)
       }
-    },
-    RuleType::Or(first, second) => {
-      RuleType::Or(Box::new(sub_set(*first, set, set_number)), Box::new(sub_set(*second, set, set_number)))
-    },
+    }
+    RuleType::Or(first, second) => RuleType::Or(
+      Box::new(sub_set(*first, set, set_number)),
+      Box::new(sub_set(*second, set, set_number)),
+    ),
     RuleType::Set(strs) => RuleType::Set(strs),
   }
 }
@@ -280,11 +287,7 @@ enum RuleType {
 }
 
 fn parse_rule_num(line: &str) -> usize {
-  line.split(":")
-    .next()
-    .unwrap()
-    .parse::<usize>()
-    .unwrap()
+  line.split(":").next().unwrap().parse::<usize>().unwrap()
 }
 
 fn parse_rule(line: &str) -> RuleType {
@@ -295,11 +298,13 @@ fn parse_rule(line: &str) -> RuleType {
   if rules.contains("|") {
     let mut or_parts = rules.split(" | ");
 
-    RuleType::Or(Box::new(parse_order(or_parts.next().unwrap())), Box::new(parse_order(or_parts.next().unwrap())))
+    RuleType::Or(
+      Box::new(parse_order(or_parts.next().unwrap())),
+      Box::new(parse_order(or_parts.next().unwrap())),
+    )
   } else if rules.contains("\"") {
     let mut set = HashSet::new();
     set.insert(rules[1..(rules.len() - 1)].to_string());
-    
     RuleType::Set(set)
   } else {
     parse_order(rules)
@@ -339,13 +344,53 @@ mod tests {
   #[test]
   fn test_parse_rules() {
     let rules = Rules::parse(&sample_input());
-    assert_eq!(rules.get_rule(0), &RuleType::Order(vec![RuleType::Other(4), RuleType::Other(1), RuleType::Other(5)]));
-    assert_eq!(rules.get_rule(1), &RuleType::Or(Box::new(RuleType::Order(vec![RuleType::Other(2), RuleType::Other(3)])),
-                                                Box::new(RuleType::Order(vec![RuleType::Other(3), RuleType::Other(2)]))));
-    assert_eq!(rules.get_rule(2), &RuleType::Or(Box::new(RuleType::Order(vec![RuleType::Other(4), RuleType::Other(4)])),
-                                                Box::new(RuleType::Order(vec![RuleType::Other(5), RuleType::Other(5)]))));
-    assert_eq!(rules.get_rule(3), &RuleType::Or(Box::new(RuleType::Order(vec![RuleType::Other(4), RuleType::Other(5)])),
-                                                Box::new(RuleType::Order(vec![RuleType::Other(5), RuleType::Other(4)]))));
+    assert_eq!(
+      rules.get_rule(0),
+      &RuleType::Order(vec![
+        RuleType::Other(4),
+        RuleType::Other(1),
+        RuleType::Other(5)
+      ])
+    );
+    assert_eq!(
+      rules.get_rule(1),
+      &RuleType::Or(
+        Box::new(RuleType::Order(vec![
+          RuleType::Other(2),
+          RuleType::Other(3)
+        ])),
+        Box::new(RuleType::Order(vec![
+          RuleType::Other(3),
+          RuleType::Other(2)
+        ]))
+      )
+    );
+    assert_eq!(
+      rules.get_rule(2),
+      &RuleType::Or(
+        Box::new(RuleType::Order(vec![
+          RuleType::Other(4),
+          RuleType::Other(4)
+        ])),
+        Box::new(RuleType::Order(vec![
+          RuleType::Other(5),
+          RuleType::Other(5)
+        ]))
+      )
+    );
+    assert_eq!(
+      rules.get_rule(3),
+      &RuleType::Or(
+        Box::new(RuleType::Order(vec![
+          RuleType::Other(4),
+          RuleType::Other(5)
+        ])),
+        Box::new(RuleType::Order(vec![
+          RuleType::Other(5),
+          RuleType::Other(4)
+        ]))
+      )
+    );
     let mut first_set = HashSet::new();
     first_set.insert(String::from("a"));
     assert_eq!(rules.get_rule(4), &RuleType::Set(first_set));
