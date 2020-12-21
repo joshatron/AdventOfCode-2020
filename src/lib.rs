@@ -21,5 +21,5 @@ pub fn run() {
     println!("  Puzzle 2 ({}ms): {}", puzzle_2_time, puzzle_2);
   }
   let all_puzzle_time = all_puzzle_start.elapsed().as_millis() as f64 / 1000.;
-  println!("All Puzzle Time: {}s", all_puzzle_time);
+  println!("Total Puzzle Time: {}s", all_puzzle_time);
 }
