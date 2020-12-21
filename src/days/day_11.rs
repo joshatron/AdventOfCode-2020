@@ -1,11 +1,11 @@
-use std::convert::TryInto;
 use crate::days::Day;
+use std::convert::TryInto;
 
 pub struct Day11 {}
 
 impl Day11 {
   pub fn new() -> Day11 {
-    Day11{}
+    Day11 {}
   }
 }
 
@@ -29,7 +29,7 @@ impl Day for Day11 {
 
 #[derive(Debug, PartialEq)]
 struct WaitingArea {
-  spots: Vec<Vec<Spot>>
+  spots: Vec<Vec<Spot>>,
 }
 
 impl WaitingArea {
@@ -54,7 +54,10 @@ impl WaitingArea {
   }
 
   fn in_bounds(&self, x: isize, y: isize) -> bool {
-    x >= 0 && x < self.width().try_into().unwrap() && y >= 0 && y < self.height().try_into().unwrap()
+    x >= 0
+      && x < self.width().try_into().unwrap()
+      && y >= 0
+      && y < self.height().try_into().unwrap()
   }
 
   fn surrounding(&self, x: usize, y: usize) -> usize {
@@ -65,7 +68,7 @@ impl WaitingArea {
 
     for nx in (isize_x - 1)..(isize_x + 2) {
       for ny in (isize_y - 1)..(isize_y + 2) {
-        if (nx != isize_x || ny != isize_y)  && self.at_spot_safe(nx, ny) == &Spot::Filled {
+        if (nx != isize_x || ny != isize_y) && self.at_spot_safe(nx, ny) == &Spot::Filled {
           occupied += 1;
         }
       }
@@ -74,16 +77,27 @@ impl WaitingArea {
     occupied
   }
 
-  fn can_see(&self, x: usize, y: usize) -> usize {
+  fn can_see_less_than(&self, x: usize, y: usize, less_than: usize) -> bool {
     let mut see = 0;
-    for dir in vec![Direction::North, Direction::NorthEast, Direction::East, Direction::SouthEast, 
-                    Direction::South, Direction::SouthWest, Direction::West, Direction::NorthWest] {
+    for dir in vec![
+      Direction::North,
+      Direction::NorthEast,
+      Direction::East,
+      Direction::SouthEast,
+      Direction::South,
+      Direction::SouthWest,
+      Direction::West,
+      Direction::NorthWest,
+    ] {
       if self.can_see_in_dir(x, y, dir) {
         see += 1;
+        if see >= less_than {
+          return false;
+        }
       }
     }
 
-    see
+    true
   }
 
   fn can_see_in_dir(&self, x: usize, y: usize, dir: Direction) -> bool {
@@ -130,16 +144,14 @@ impl WaitingArea {
           'L' => row.push(Spot::Empty),
           '.' => row.push(Spot::Floor),
           '#' => row.push(Spot::Filled),
-          _ => row.push(Spot::Floor)
+          _ => row.push(Spot::Floor),
         }
       }
 
       spots.push(row);
     }
 
-    WaitingArea{
-      spots: spots
-    }
+    WaitingArea { spots: spots }
   }
 }
 
@@ -164,32 +176,32 @@ impl Point {
     match dir {
       Direction::North => {
         self.y -= 1;
-      },
+      }
       Direction::NorthEast => {
         self.y -= 1;
         self.x += 1;
-      },
+      }
       Direction::East => {
         self.x += 1;
-      },
+      }
       Direction::SouthEast => {
         self.y += 1;
         self.x += 1;
-      },
+      }
       Direction::South => {
         self.y += 1;
-      },
+      }
       Direction::SouthWest => {
         self.y += 1;
         self.x -= 1;
-      },
+      }
       Direction::West => {
         self.x -= 1;
-      },
+      }
       Direction::NorthWest => {
         self.y -= 1;
         self.x -= 1;
-      },
+      }
     }
   }
 }
@@ -198,24 +210,24 @@ impl Point {
 enum Spot {
   Floor,
   Empty,
-  Filled
+  Filled,
 }
 
 enum ArrangementMethod {
   One,
-  Two
+  Two,
 }
 
 fn get_final_arrangement(input: &Vec<String>, arrangement: ArrangementMethod) -> WaitingArea {
-    let mut current = WaitingArea::parse(input);
-    let mut next = get_next_arrangment(&current, &arrangement);
+  let mut current = WaitingArea::parse(input);
+  let mut next = get_next_arrangment(&current, &arrangement);
 
-    while current != next {
-      current = next;
-      next = get_next_arrangment(&current, &arrangement);
-    }
+  while current != next {
+    current = next;
+    next = get_next_arrangment(&current, &arrangement);
+  }
 
-    current
+  current
 }
 
 fn get_next_arrangment(current: &WaitingArea, arrangement: &ArrangementMethod) -> WaitingArea {
@@ -231,40 +243,46 @@ fn get_next_arrangment(current: &WaitingArea, arrangement: &ArrangementMethod) -
     spots.push(row);
   }
 
-  WaitingArea{
-    spots: spots
-  }
+  WaitingArea { spots: spots }
 }
 
 fn next_spot_1(current: &WaitingArea, x: usize, y: usize) -> Spot {
   match current.at_spot(x, y) {
     Spot::Floor => Spot::Floor,
-    Spot::Empty => if current.surrounding(x, y) == 0 {
-      Spot::Filled
-    } else {
-      Spot::Empty
-    },
-    Spot::Filled => if current.surrounding(x, y) < 4 {
-      Spot::Filled
-    } else {
-      Spot::Empty
-    },
+    Spot::Empty => {
+      if current.surrounding(x, y) == 0 {
+        Spot::Filled
+      } else {
+        Spot::Empty
+      }
+    }
+    Spot::Filled => {
+      if current.surrounding(x, y) < 4 {
+        Spot::Filled
+      } else {
+        Spot::Empty
+      }
+    }
   }
 }
 
 fn next_spot_2(current: &WaitingArea, x: usize, y: usize) -> Spot {
   match current.at_spot(x, y) {
     Spot::Floor => Spot::Floor,
-    Spot::Empty => if current.can_see(x, y) == 0 {
-      Spot::Filled
-    } else {
-      Spot::Empty
-    },
-    Spot::Filled => if current.can_see(x, y) < 5 {
-      Spot::Filled
-    } else {
-      Spot::Empty
-    },
+    Spot::Empty => {
+      if current.can_see_less_than(x, y, 1) {
+        Spot::Filled
+      } else {
+        Spot::Empty
+      }
+    }
+    Spot::Filled => {
+      if current.can_see_less_than(x, y, 5) {
+        Spot::Filled
+      } else {
+        Spot::Empty
+      }
+    }
   }
 }
 
@@ -306,7 +324,7 @@ mod tests {
         vec![Spot::Filled, Spot::Filled, Spot::Filled],
         vec![Spot::Floor, Spot::Empty, Spot::Floor],
         vec![Spot::Filled, Spot::Filled, Spot::Filled],
-      ]
+      ],
     };
     assert_eq!(waiting_area.surrounding(1, 1), 6);
     assert_eq!(waiting_area.surrounding(0, 0), 1);
@@ -326,7 +344,7 @@ mod tests {
 
   #[test]
   fn test_puzzle_1() {
-    assert_eq!(Day11{}.puzzle_1(&sample_input()), "37");
+    assert_eq!(Day11 {}.puzzle_1(&sample_input()), "37");
   }
 
   #[test]
@@ -340,6 +358,6 @@ mod tests {
 
   #[test]
   fn test_puzzle_2() {
-    assert_eq!(Day11{}.puzzle_2(&sample_input()), "26");
+    assert_eq!(Day11 {}.puzzle_2(&sample_input()), "26");
   }
 }
