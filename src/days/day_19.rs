@@ -1,7 +1,6 @@
 use crate::days::Day;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::time::Instant;
 
 pub struct Day19 {}
 

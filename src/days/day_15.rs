@@ -4,7 +4,7 @@ pub struct Day15 {}
 
 impl Day15 {
   pub fn new() -> Day15 {
-    Day15{}
+    Day15 {}
   }
 }
 
@@ -21,13 +21,16 @@ impl Day for Day15 {
     }
 
     initial.last.to_string()
-
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let mut initial = Sequence::parse(&input[0]);
 
-    while initial.turn < 30000000 {
+    //while initial.turn < 30000000 {
+    //initial.play_one_round();
+    //}
+    let rounds = 30000000 - initial.turn;
+    for _ in 0..rounds {
       initial.play_one_round();
     }
 
@@ -36,7 +39,8 @@ impl Day for Day15 {
 }
 
 fn parse_starting_sequence(line: &str) -> Vec<usize> {
-  line.split(",")
+  line
+    .split(",")
     .map(|e| e.parse::<usize>().unwrap())
     .collect()
 }
@@ -50,12 +54,12 @@ struct Sequence {
 impl Sequence {
   fn play_one_round(&mut self) {
     if self.done[self.last] != 0 {
-        let new_last = self.turn - self.done[self.last];
-        self.done[self.last] = self.turn;
-        self.last = new_last;
+      let new_last = self.turn - self.done[self.last];
+      self.done[self.last] = self.turn;
+      self.last = new_last;
     } else {
-        self.done[self.last] = self.turn;
-        self.last = 0;
+      self.done[self.last] = self.turn;
+      self.last = 0;
     }
 
     self.turn += 1;
@@ -64,7 +68,7 @@ impl Sequence {
   fn parse(line: &str) -> Sequence {
     let mut sequence = Sequence {
       turn: 0,
-      last: 0, 
+      last: 0,
       done: vec![0; 30000000],
     };
 
@@ -119,6 +123,6 @@ mod tests {
 
   #[test]
   fn test_puzzle_1() {
-    assert_eq!(Day15{}.puzzle_1(&vec![String::from("0,3,6")]), "436");
+    assert_eq!(Day15 {}.puzzle_1(&vec![String::from("0,3,6")]), "436");
   }
 }
