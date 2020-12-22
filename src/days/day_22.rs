@@ -1,4 +1,5 @@
 use crate::days::Day;
+use std::collections::HashSet;
 
 pub struct Day22 {}
 
@@ -31,22 +32,6 @@ impl Day for Day22 {
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let mut deck = Deck::parse(input);
     while !deck.person_one_cards[0].is_empty() && !deck.person_two_cards[0].is_empty() {
-      println!(
-        "{}, {}",
-        deck.person_one_cards.len(),
-        deck.previously_played.len()
-      );
-      if deck.person_one_cards.len() == 9 {
-        println!(
-          "{:?}",
-          deck.previously_played[deck.previously_played.len() - 1]
-        );
-        println!(
-          "{:?} {:?}",
-          deck.person_one_cards[deck.person_one_cards.len() - 1],
-          deck.person_two_cards[deck.person_two_cards.len() - 1]
-        );
-      }
       deck.play_one_round_of_recursive_combat();
     }
 
@@ -65,7 +50,7 @@ struct Deck {
   person_one_cards: Vec<Vec<usize>>,
   person_two_cards: Vec<Vec<usize>>,
   in_play_cards: Vec<(usize, usize)>,
-  previously_played: Vec<(Vec<usize>, Vec<usize>)>,
+  previously_played: Vec<HashSet<(Vec<usize>, Vec<usize>)>>,
   new_game: bool,
 }
 
@@ -80,6 +65,7 @@ impl Deck {
     };
     deck.person_one_cards.push(Vec::new());
     deck.person_two_cards.push(Vec::new());
+    deck.previously_played.push(HashSet::new());
 
     let mut state = 0;
     for line in input {
@@ -97,11 +83,6 @@ impl Deck {
         _ => (),
       }
     }
-
-    deck.previously_played.push((
-      deck.person_one_cards[0].clone(),
-      deck.person_two_cards[0].clone(),
-    ));
 
     deck
   }
@@ -124,12 +105,11 @@ impl Deck {
   fn play_one_round_of_recursive_combat(&mut self) {
     if !self.person_one_cards[0].is_empty() && !self.person_two_cards[0].is_empty() {
       let depth = self.person_one_cards.len() - 1;
-      let first = &self.previously_played[depth].0;
-      let second = &self.previously_played[depth].1;
-      if !self.new_game
-        && first == &self.person_one_cards[depth]
-        && second == &self.person_two_cards[depth]
-      {
+      let new_state = (
+        self.person_one_cards[depth].clone(),
+        self.person_two_cards[depth].clone(),
+      );
+      if self.previously_played[depth].contains(&new_state) {
         if self.person_one_cards.len() == 1 {
           self.person_two_cards.pop();
           self.person_two_cards.push(Vec::new());
@@ -142,7 +122,6 @@ impl Deck {
           self.get_top_person_one_hand().push(top_cards.1);
         }
       } else if self.person_one_cards[depth].is_empty() {
-        self.new_game = false;
         self.previously_played.pop();
         self.person_one_cards.pop();
         self.person_two_cards.pop();
@@ -150,7 +129,6 @@ impl Deck {
         self.get_top_person_two_hand().push(top_cards.1);
         self.get_top_person_two_hand().push(top_cards.0);
       } else if self.person_two_cards[depth].is_empty() {
-        self.new_game = false;
         self.previously_played.pop();
         self.person_one_cards.pop();
         self.person_two_cards.pop();
@@ -158,7 +136,7 @@ impl Deck {
         self.get_top_person_one_hand().push(top_cards.0);
         self.get_top_person_one_hand().push(top_cards.1);
       } else {
-        self.new_game = false;
+        self.previously_played[depth].insert(new_state);
         let top_cards = (
           self.person_one_cards[depth].remove(0),
           self.person_two_cards[depth].remove(0),
@@ -167,15 +145,11 @@ impl Deck {
         if self.person_one_cards[depth].len() >= top_cards.0
           && self.person_two_cards[depth].len() >= top_cards.1
         {
-          self.previously_played.push((
-            self.person_one_cards[depth].clone(),
-            self.person_two_cards[depth].clone(),
-          ));
-          self.new_game = true;
+          self.previously_played.push(HashSet::new());
           self.in_play_cards.push(top_cards);
-          let new_person_one_cards = self.get_top_person_one_hand().clone();
+          let new_person_one_cards = clone_first_n(self.get_top_person_one_hand(), top_cards.0);
           self.person_one_cards.push(new_person_one_cards);
-          let new_person_two_cards = self.get_top_person_two_hand().clone();
+          let new_person_two_cards = clone_first_n(self.get_top_person_two_hand(), top_cards.1);
           self.person_two_cards.push(new_person_two_cards);
         } else {
           if top_cards.0 > top_cards.1 {
@@ -200,11 +174,6 @@ impl Deck {
     &mut self.person_two_cards[depth]
   }
 
-  fn get_top_previously_played(&mut self) -> &mut (Vec<usize>, Vec<usize>) {
-    let depth = self.previously_played.len() - 1;
-    &mut self.previously_played[depth]
-  }
-
   fn get_hand_score(hand: &Vec<usize>) -> usize {
     let mut multiplier = 1;
     let mut total = 0;
@@ -215,6 +184,15 @@ impl Deck {
 
     total
   }
+}
+
+fn clone_first_n(original: &Vec<usize>, n: usize) -> Vec<usize> {
+  let mut v = Vec::new();
+  for i in 0..n {
+    v.push(original[i]);
+  }
+
+  v
 }
 
 #[cfg(test)]
