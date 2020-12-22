@@ -325,9 +325,9 @@ mod tests {
 
   fn sample_input() -> Vec<String> {
     vec![
-      String::from("0: 4 1 5"),
-      String::from("1: 2 3 | 3 2"),
-      String::from("2: 4 4 | 5 5"),
+      String::from("0: 4 8 5"),
+      String::from("8: 11 3 | 3 11"),
+      String::from("11: 4 4 | 5 5"),
       String::from("3: 4 5 | 5 4"),
       String::from("4: \"a\""),
       String::from("5: \"b\""),
@@ -347,25 +347,25 @@ mod tests {
       rules.get_rule(0),
       &RuleType::Order(vec![
         RuleType::Other(4),
-        RuleType::Other(1),
+        RuleType::Other(8),
         RuleType::Other(5)
       ])
     );
     assert_eq!(
-      rules.get_rule(1),
+      rules.get_rule(8),
       &RuleType::Or(
         Box::new(RuleType::Order(vec![
-          RuleType::Other(2),
+          RuleType::Other(11),
           RuleType::Other(3)
         ])),
         Box::new(RuleType::Order(vec![
           RuleType::Other(3),
-          RuleType::Other(2)
+          RuleType::Other(11)
         ]))
       )
     );
     assert_eq!(
-      rules.get_rule(2),
+      rules.get_rule(11),
       &RuleType::Or(
         Box::new(RuleType::Order(vec![
           RuleType::Other(4),
@@ -416,7 +416,7 @@ mod tests {
     let mut fourth_set = HashSet::new();
     fourth_set.insert(String::from("aa"));
     fourth_set.insert(String::from("bb"));
-    assert_eq!(rules.get_rule(2), &RuleType::Set(fourth_set));
+    assert_eq!(rules.get_rule(11), &RuleType::Set(fourth_set));
     let mut fifth_set = HashSet::new();
     fifth_set.insert(String::from("aaab"));
     fifth_set.insert(String::from("aaba"));
@@ -426,11 +426,6 @@ mod tests {
     fifth_set.insert(String::from("abbb"));
     fifth_set.insert(String::from("baaa"));
     fifth_set.insert(String::from("babb"));
-    assert_eq!(rules.get_rule(1), &RuleType::Set(fifth_set));
-  }
-
-  #[test]
-  fn test_puzzle_1() {
-    assert_eq!(Day19::new().puzzle_1(&sample_input()), "2");
+    assert_eq!(rules.get_rule(8), &RuleType::Set(fifth_set));
   }
 }
