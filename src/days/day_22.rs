@@ -31,8 +31,16 @@ impl Day for Day22 {
   fn puzzle_2(&self, input: &Vec<String>) -> String {
     let mut deck = Deck::parse(input);
     while !deck.person_one_cards[0].is_empty() && !deck.person_two_cards[0].is_empty() {
-      println!("{}", deck.person_one_cards.len());
+      println!(
+        "{}, {}",
+        deck.person_one_cards.len(),
+        deck.previously_played.len()
+      );
       if deck.person_one_cards.len() == 9 {
+        println!(
+          "{:?}",
+          deck.previously_played[deck.previously_played.len() - 1]
+        );
         println!(
           "{:?} {:?}",
           deck.person_one_cards[deck.person_one_cards.len() - 1],
@@ -135,6 +143,7 @@ impl Deck {
         }
       } else if self.person_one_cards[depth].is_empty() {
         self.new_game = false;
+        self.previously_played.pop();
         self.person_one_cards.pop();
         self.person_two_cards.pop();
         let top_cards = self.in_play_cards.pop().unwrap();
@@ -142,6 +151,7 @@ impl Deck {
         self.get_top_person_two_hand().push(top_cards.0);
       } else if self.person_two_cards[depth].is_empty() {
         self.new_game = false;
+        self.previously_played.pop();
         self.person_one_cards.pop();
         self.person_two_cards.pop();
         let top_cards = self.in_play_cards.pop().unwrap();
