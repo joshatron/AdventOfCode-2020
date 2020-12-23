@@ -13,6 +13,7 @@ pub mod day_2;
 pub mod day_20;
 pub mod day_21;
 pub mod day_22;
+pub mod day_23;
 pub mod day_3;
 pub mod day_4;
 pub mod day_5;
@@ -51,6 +52,7 @@ pub fn get_days() -> Vec<Box<dyn Day>> {
     Box::new(day_20::Day20::new()),
     Box::new(day_21::Day21::new()),
     Box::new(day_22::Day22::new()),
+    Box::new(day_23::Day23::new()),
   ]
 }
 
