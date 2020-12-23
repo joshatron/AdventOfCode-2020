@@ -1,5 +1,4 @@
 use crate::days::Day;
-use std::collections::HashMap;
 
 pub struct Day23 {}
 
@@ -36,8 +35,8 @@ impl Day for Day23 {
       cups.step_one();
     }
 
-    let first = *cups.cups.get(&1).unwrap();
-    let second = *cups.cups.get(&first).unwrap();
+    let first = cups.cups[1];
+    let second = cups.cups[first];
 
     (first * second).to_string()
   }
@@ -68,10 +67,6 @@ impl Cups {
 
   fn current_cup(&self) -> usize {
     self.get_cup_at_loc(self.current)
-  }
-
-  fn current_cup_loc(&self) -> usize {
-    self.current
   }
 
   fn find_cup(&self, cup: usize) -> usize {
@@ -163,14 +158,14 @@ fn up_one_wrap(start: usize) -> usize {
 }
 
 struct BigCups {
-  cups: HashMap<usize, usize>,
+  cups: Vec<usize>,
   current: usize,
 }
 
 impl BigCups {
   fn parse(input: &Vec<String>) -> BigCups {
     let mut cups = BigCups {
-      cups: HashMap::new(),
+      cups: vec![0; 10000001],
       current: 0,
     };
 
@@ -180,48 +175,48 @@ impl BigCups {
       if last == 0 {
         cups.current = num;
       } else {
-        cups.cups.insert(last, num);
+        cups.cups[last] = num;
       }
       last = num;
     }
 
     for i in 10..1000001 {
-      cups.cups.insert(last, i);
+      cups.cups[last] = i;
       last = i;
     }
-    cups.cups.insert(last, cups.current);
+    cups.cups[last] = cups.current;
 
     cups
   }
 
   fn step_one(&mut self) {
+    let next = self.get_nth_after_current(1);
+    let next_three = self.get_nth_after_current(3);
     let next_below = find_next_below_big(
       self.current,
       self.get_nth_after_current(1),
       self.get_nth_after_current(2),
       self.get_nth_after_current(3),
     );
-    let after_next_below = *self.cups.get(&next_below).unwrap();
+    let after_next_below = self.cups[next_below];
     let after_current = self.get_nth_after_current(4);
-    self.cups.insert(next_below, self.get_nth_after_current(1));
-    self
-      .cups
-      .insert(self.get_nth_after_current(3), after_next_below);
-    self.cups.insert(self.current, after_current);
+    self.cups[next_below] = next;
+    self.cups[next_three] = after_next_below;
+    self.cups[self.current] = after_current;
     self.current_to_next();
   }
 
   fn get_nth_after_current(&self, amount: usize) -> usize {
     let mut temp_current = self.current;
     for _ in 0..amount {
-      temp_current = *self.cups.get(&temp_current).unwrap();
+      temp_current = self.cups[temp_current];
     }
 
     temp_current
   }
 
   fn current_to_next(&mut self) {
-    self.current = *self.cups.get(&self.current).unwrap();
+    self.current = self.cups[self.current];
   }
 }
 
@@ -258,7 +253,6 @@ mod tests {
   fn test_current_cup() {
     let cups = Cups::parse(&sample_input());
     assert_eq!(cups.current_cup(), 3);
-    assert_eq!(cups.current_cup_loc(), 0);
   }
 
   #[test]
@@ -275,10 +269,5 @@ mod tests {
   #[test]
   fn test_puzzle_1() {
     assert_eq!(Day23::new().puzzle_1(&sample_input()), "67384529");
-  }
-
-  #[test]
-  fn test_puzzle_2() {
-    assert_eq!(Day23::new().puzzle_2(&sample_input()), "149245887792");
   }
 }
