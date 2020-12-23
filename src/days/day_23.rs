@@ -14,23 +14,23 @@ impl Day for Day23 {
   }
 
   fn puzzle_1(&self, input: &Vec<String>) -> String {
-    let mut cups = Cups::parse(input);
+    let mut cups = Cups::parse(input, 10);
     for _ in 0..100 {
       cups.step_one();
     }
 
     let mut order = String::new();
-    let mut spot = up_one_wrap(cups.find_cup(1));
+    let mut spot = cups.cups[1];
     for _ in 0..8 {
-      order.push_str(&cups.get_cup_at_loc(spot).to_string());
-      spot = up_one_wrap(spot);
+      order.push_str(&spot.to_string());
+      spot = cups.cups[spot];
     }
 
     order
   }
 
   fn puzzle_2(&self, input: &Vec<String>) -> String {
-    let mut cups = BigCups::parse(input);
+    let mut cups = Cups::parse(input, 1000001);
     for _ in 0..10000000 {
       cups.step_one();
     }
@@ -43,129 +43,14 @@ impl Day for Day23 {
 }
 
 struct Cups {
-  cups: [usize; 9],
-  current: usize,
-}
-
-impl Cups {
-  fn parse(input: &Vec<String>) -> Cups {
-    let mut cups = Cups {
-      cups: [0; 9],
-      current: 0,
-    };
-
-    for (i, c) in input[0].chars().enumerate() {
-      cups.cups[i] = c.to_string().parse::<usize>().unwrap();
-    }
-
-    cups
-  }
-
-  fn get_cup_at_loc(&self, loc: usize) -> usize {
-    self.cups[loc % 9]
-  }
-
-  fn current_cup(&self) -> usize {
-    self.get_cup_at_loc(self.current)
-  }
-
-  fn find_cup(&self, cup: usize) -> usize {
-    for (i, c) in self.cups.iter().enumerate() {
-      if &cup == c {
-        return i;
-      }
-    }
-
-    0
-  }
-
-  fn step_one(&mut self) {
-    let next_one = self.get_cup_at_loc(up_n_wrap(self.current, 1));
-    let next_two = self.get_cup_at_loc(up_n_wrap(self.current, 2));
-    let next_three = self.get_cup_at_loc(up_n_wrap(self.current, 3));
-    let next_below = find_next_below(self.current_cup(), next_one, next_two, next_three);
-
-    let mut loc = (self.current + 4) % 9;
-    let mut done = false;
-    while !done {
-      if self.get_cup_at_loc(loc) == next_below {
-        done = true;
-      }
-      self.shift_left_n(loc, 3);
-      loc = up_one_wrap(loc);
-    }
-
-    self.cups[down_n_wrap(loc, 3)] = next_one;
-    self.cups[down_n_wrap(loc, 2)] = next_two;
-    self.cups[down_n_wrap(loc, 1)] = next_three;
-    self.current = up_one_wrap(self.current);
-  }
-
-  fn shift_left_n(&mut self, loc: usize, amount: usize) {
-    let mut current_loc = loc;
-    for _ in 0..amount {
-      self.shift_left_one(current_loc);
-      current_loc = down_one_wrap(current_loc);
-    }
-  }
-
-  fn shift_left_one(&mut self, loc: usize) {
-    self.cups[down_one_wrap(loc)] = self.get_cup_at_loc(loc);
-  }
-}
-
-fn find_next_below(start: usize, skip_one: usize, skip_two: usize, skip_three: usize) -> usize {
-  let mut below = if start == 1 { 9 } else { start - 1 };
-  while below == skip_one || below == skip_two || below == skip_three {
-    if below == 1 {
-      below = 9;
-    } else {
-      below = below - 1;
-    }
-  }
-
-  below
-}
-
-fn down_n_wrap(start: usize, amount: usize) -> usize {
-  let mut current = start;
-  for _ in 0..amount {
-    current = down_one_wrap(current);
-  }
-
-  current
-}
-
-fn down_one_wrap(start: usize) -> usize {
-  if start == 0 {
-    8
-  } else {
-    start - 1
-  }
-}
-
-fn up_n_wrap(start: usize, amount: usize) -> usize {
-  let mut current = start;
-  for _ in 0..amount {
-    current = up_one_wrap(current);
-  }
-
-  current
-}
-
-fn up_one_wrap(start: usize) -> usize {
-  (start + 1) % 9
-}
-
-struct BigCups {
   cups: Vec<usize>,
   current: usize,
 }
 
-impl BigCups {
-  fn parse(input: &Vec<String>) -> BigCups {
-    let mut cups = BigCups {
-      cups: vec![0; 10000001],
+impl Cups {
+  fn parse(input: &Vec<String>, size: usize) -> Cups {
+    let mut cups = Cups {
+      cups: vec![0; size],
       current: 0,
     };
 
@@ -180,7 +65,7 @@ impl BigCups {
       last = num;
     }
 
-    for i in 10..1000001 {
+    for i in 10..size {
       cups.cups[last] = i;
       last = i;
     }
@@ -197,6 +82,7 @@ impl BigCups {
       self.get_nth_after_current(1),
       self.get_nth_after_current(2),
       self.get_nth_after_current(3),
+      self.cups.len() - 1,
     );
     let after_next_below = self.cups[next_below];
     let after_current = self.get_nth_after_current(4);
@@ -220,11 +106,17 @@ impl BigCups {
   }
 }
 
-fn find_next_below_big(start: usize, skip_one: usize, skip_two: usize, skip_three: usize) -> usize {
-  let mut below = if start == 1 { 1000000 } else { start - 1 };
+fn find_next_below_big(
+  start: usize,
+  skip_one: usize,
+  skip_two: usize,
+  skip_three: usize,
+  size: usize,
+) -> usize {
+  let mut below = if start == 1 { size } else { start - 1 };
   while below == skip_one || below == skip_two || below == skip_three {
     if below == 1 {
-      below = 1000000;
+      below = size;
     } else {
       below = below - 1;
     }
@@ -243,27 +135,22 @@ mod tests {
 
   #[test]
   fn test_parse_cups() {
-    let cups = Cups::parse(&sample_input());
-    assert_eq!(cups.get_cup_at_loc(0), 3);
-    assert_eq!(cups.get_cup_at_loc(8), 7);
-    assert_eq!(cups.get_cup_at_loc(9), 3);
-  }
-
-  #[test]
-  fn test_current_cup() {
-    let cups = Cups::parse(&sample_input());
-    assert_eq!(cups.current_cup(), 3);
+    let cups = Cups::parse(&sample_input(), 10);
+    assert_eq!(cups.cups[1], 2);
+    assert_eq!(cups.cups[3], 8);
+    assert_eq!(cups.cups[7], 3);
+    assert_eq!(cups.current, 3);
   }
 
   #[test]
   fn test_step_one() {
-    let mut cups = Cups::parse(&sample_input());
+    let mut cups = Cups::parse(&sample_input(), 10);
     cups.step_one();
-    assert_eq!(cups.cups, [3, 2, 8, 9, 1, 5, 4, 6, 7]);
-    assert_eq!(cups.current_cup(), 2);
+    assert_eq!(cups.cups, [0, 5, 8, 2, 6, 4, 7, 3, 9, 1]);
+    assert_eq!(cups.current, 2);
     cups.step_one();
-    assert_eq!(cups.cups, [3, 2, 5, 4, 6, 7, 8, 9, 1]);
-    assert_eq!(cups.current_cup(), 5);
+    assert_eq!(cups.cups, [0, 3, 5, 2, 6, 4, 7, 8, 9, 1]);
+    assert_eq!(cups.current, 5);
   }
 
   #[test]
