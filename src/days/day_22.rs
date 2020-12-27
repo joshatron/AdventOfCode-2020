@@ -145,12 +145,17 @@ impl Deck {
         if self.person_one_cards[depth].len() >= top_cards.0
           && self.person_two_cards[depth].len() >= top_cards.1
         {
-          self.previously_played.push(HashSet::new());
-          self.in_play_cards.push(top_cards);
           let new_person_one_cards = clone_first_n(self.get_top_person_one_hand(), top_cards.0);
-          self.person_one_cards.push(new_person_one_cards);
           let new_person_two_cards = clone_first_n(self.get_top_person_two_hand(), top_cards.1);
-          self.person_two_cards.push(new_person_two_cards);
+          if can_short_circuit(&new_person_one_cards, &new_person_two_cards) {
+            self.get_top_person_one_hand().push(top_cards.0);
+            self.get_top_person_one_hand().push(top_cards.1);
+          } else {
+            self.previously_played.push(HashSet::new());
+            self.in_play_cards.push(top_cards);
+            self.person_one_cards.push(new_person_one_cards);
+            self.person_two_cards.push(new_person_two_cards);
+          }
         } else {
           if top_cards.0 > top_cards.1 {
             self.get_top_person_one_hand().push(top_cards.0);
@@ -184,6 +189,13 @@ impl Deck {
 
     total
   }
+}
+
+fn can_short_circuit(player_one_deck: &Vec<usize>, player_two_deck: &Vec<usize>) -> bool {
+  let max_player_one = player_one_deck.iter().max().unwrap();
+  let max_player_two = player_two_deck.iter().max().unwrap();
+
+  max_player_one > max_player_two && *max_player_one > player_one_deck.len() - 1
 }
 
 fn clone_first_n(original: &Vec<usize>, n: usize) -> Vec<usize> {
