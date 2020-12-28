@@ -180,80 +180,40 @@ impl Tiles {
   fn next_day(&mut self) {
     let mut new_tiles = HashSet::new();
 
-    for x in self.min_x()..self.max_x() {
-      for y in self.min_y()..self.max_y() {
-        let point = Point { x: x, y: y };
-        let surrounding = self.num_surrounding(&point);
+    let mut to_check: HashSet<Point> = HashSet::new();
+    for t in &self.flipped {
+      to_check.insert(Point { x: t.x, y: t.y });
+      for p in t.surrounding() {
+        to_check.insert(p);
+      }
+    }
 
-        if (self.flipped.contains(&point) && surrounding == 1 || surrounding == 2)
-          || (!self.flipped.contains(&point) && surrounding == 2)
-        {
-          new_tiles.insert(point);
-        }
+    for p in to_check {
+      let surrounding = self.num_surrounding(&p, 2);
+
+      if (self.flipped.contains(&p) && (surrounding == 1 || surrounding == 2))
+        || (!self.flipped.contains(&p) && surrounding == 2)
+      {
+        new_tiles.insert(p);
       }
     }
 
     self.flipped = new_tiles;
   }
 
-  fn num_surrounding(&self, point: &Point) -> usize {
+  fn num_surrounding(&self, point: &Point, max: usize) -> usize {
     let mut surrounding = 0;
 
     for p in point.surrounding() {
       if self.flipped.contains(&p) {
         surrounding += 1;
+        if surrounding == max + 1 {
+          return surrounding;
+        }
       }
     }
 
     surrounding
-  }
-
-  fn min_x(&self) -> isize {
-    let mut min_x = isize::MAX;
-
-    for point in &self.flipped {
-      if point.x < min_x {
-        min_x = point.x
-      }
-    }
-
-    min_x - 3
-  }
-
-  fn min_y(&self) -> isize {
-    let mut min_y = isize::MAX;
-
-    for point in &self.flipped {
-      if point.y < min_y {
-        min_y = point.y
-      }
-    }
-
-    min_y - 2
-  }
-
-  fn max_x(&self) -> isize {
-    let mut max_x = isize::MIN;
-
-    for point in &self.flipped {
-      if point.x > max_x {
-        max_x = point.x
-      }
-    }
-
-    max_x + 3
-  }
-
-  fn max_y(&self) -> isize {
-    let mut max_y = isize::MIN;
-
-    for point in &self.flipped {
-      if point.y > max_y {
-        max_y = point.y
-      }
-    }
-
-    max_y + 2
   }
 }
 
