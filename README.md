@@ -17,3 +17,5 @@ Overall, I really enjoyed programming in Rust.
 The ownership and lifetime rules are sometimes difficult to wrap my head around, but one I started understanding them, I could see how powerful they are.
 I also really enjoyed how helpful the compiler and online documentation was.
 Finally, I learned about halfway through the puzzles how much faster a release build can be.
+
+My final time to run all the puzzles is 1.5 seconds on a mid range desktop computer.
